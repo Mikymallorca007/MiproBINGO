@@ -2296,7 +2296,7 @@ function renderConfig() {
     b.classList.toggle("active", +b.dataset.ballDelay === currentDelay);
   });
 
-  const currentHistorySize = Number(options.ballHistorySize) || 3;
+  const currentHistorySize = Number(options.ballHistorySize) || 5;
   document.querySelectorAll(".fee-btn[data-ball-history]").forEach(b => {
     b.classList.toggle("active", Number(b.dataset.ballHistory) === currentHistorySize);
   });
