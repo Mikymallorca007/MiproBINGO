@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: aldea-bella-bingo
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MASTER_PASSWORD
+        sync: false
+      - key: BAR_NAME
+        value: Bar Aldea Bella
+      - key: PUBLIC_URL
+        sync: false

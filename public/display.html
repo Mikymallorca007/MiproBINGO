@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>🎱 Aldea Bella — Display</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #1e3a5f 0%, #0f1a2e 60%);
+    color: #e8eef7;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    padding: 24px;
+    min-height: 100vh;
+    max-width: 1920px;
+    margin: 0 auto;
+  }
+  @media (max-width: 1100px) {
+    .stage { grid-template-columns: 1fr; }
+  }
+  .left { display: flex; flex-direction: column; }
+  .right { display: flex; flex-direction: column; gap: 20px; }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .header .brand {
+    font-size: 2.4rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #f5c542, #e8a020);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header .session {
+    background: #0a1424;
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 1.3rem;
+    font-family: "Courier New", monospace;
+    color: #f5c542;
+    border: 2px solid #2a4a72;
+    letter-spacing: 4px;
+    font-weight: 700;
+  }
+
+  .hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #16253d, #1e3a5f);
+    border-radius: 28px;
+    border: 3px solid #2a4a72;
+    padding: 40px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero .letter {
+    font-size: 5rem;
+    font-weight: 900;
+    color: #64b5f6;
+    letter-spacing: 24px;
+    text-shadow: 0 0 40px rgba(100, 181, 246, 0.6);
+    margin-bottom: 10px;
+  }
+  .hero .number {
+    font-size: 22rem;
+    font-weight: 900;
+    color: #f5c542;
+    line-height: 0.9;
+    text-shadow: 0 0 80px rgba(245, 197, 66, 0.7);
+    transition: all 0.2s;
+  }
+  .hero .number.pop { animation: numberPop 0.6s ease-out; }
+  @keyframes numberPop {
+    0% { transform: scale(0.7); opacity: 0.3; }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .hero .none {
+    font-size: 6rem;
+    color: #4a5a72;
+    font-style: italic;
+  }
+  .hero .label {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.2rem;
+    letter-spacing: 8px;
+    color: #7a90b4;
+    text-transform: uppercase;
+  }
+  .hero .round-tag {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    padding: 8px 20px;
+    border-radius: 24px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .hero .round-tag.real { background: #1e4620; color: #66bb6a; border: 2px solid #2e7d32; }
+  .hero .round-tag.practice { background: #3a2a10; color: #ffab40; border: 2px solid #8b5a1a; }
+  .hero .practice-warn {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #ffab40, #ef6c00);
+    color: #1a1a1a;
+    padding: 10px 28px;
+    border-radius: 24px;
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .last-calls {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .last-call {
+    background: #0a1424;
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+    border: 2px solid #2a4a72;
+  }
+  .last-call .lc-letter {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #64b5f6;
+    letter-spacing: 2px;
+  }
+  .last-call .lc-num {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #f5c542;
+    line-height: 1;
+    margin-top: 4px;
+  }
+
+  .panel {
+    background: #16253d;
+    border-radius: 20px;
+    padding: 22px;
+    border: 2px solid #2a4a72;
+  }
+  .panel h3 {
+    margin: 0 0 16px;
+    font-size: 1rem;
+    color: #90a4c4;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+
+  .ball-grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    gap: 3px;
+  }
+  .ball-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0a1424;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4a5a72;
+    border: 1px solid #1e3555;
+    transition: all 0.2s;
+  }
+  .ball-cell.called {
+    background: linear-gradient(180deg, #f5c542, #e8a020);
+    color: #1a1a1a;
+    font-weight: 900;
+    box-shadow: 0 0 10px rgba(245, 197, 66, 0.5);
+    transform: scale(1.05);
+  }
+
+  .qr-box {
+    text-align: center;
+  }
+  .qr-box .qr-wrap {
+    background: #fff;
+    padding: 16px;
+    border-radius: 16px;
+    display: inline-block;
+  }
+  .qr-box .qr-wrap img { display: block; width: 220px; height: 220px; }
+  .qr-box .qr-url {
+    margin-top: 12px;
+    font-size: 1rem;
+    color: #90a4c4;
+    font-family: "Courier New", monospace;
+  }
+  .qr-box .qr-hint {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #7a90b4;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .stat {
+    background: #0a1424;
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid #2a4a72;
+  }
+  .stat .value { font-size: 1.8rem; font-weight: 900; color: #f5c542; }
+  .stat .label {
+    font-size: 0.7rem;
+    color: #7a90b4;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  .claim-banner {
+    display: none;
+    background: linear-gradient(135deg, #8b1a1a, #c62828);
+    border: 3px solid #ef5350;
+    border-radius: 20px;
+    padding: 28px;
+    text-align: center;
+    animation: pulseBig 1s infinite;
+  }
+  .claim-banner.active { display: block; }
+  @keyframes pulseBig {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0.7); }
+    50% { box-shadow: 0 0 0 20px rgba(239, 83, 80, 0); }
+  }
+  .claim-banner .title {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+  .claim-banner .player {
+    font-size: 2rem;
+    color: #ffd54f;
+    font-weight: 900;
+  }
+
+  .claim-window-banner {
+    display: none;
+    background: linear-gradient(135deg, #1b5e20, #2e7d32);
+    border: 3px solid #66bb6a;
+    border-radius: 20px;
+    padding: 28px;
+    text-align: center;
+  }
+  .claim-window-banner.active { display: block; }
+  .claim-window-banner .title {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+  }
+  .claim-window-banner .counter {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #fff;
+    font-family: "Courier New", monospace;
+    line-height: 1;
+  }
+  .claim-window-banner .sub {
+    font-size: 1rem;
+    color: #e8eef7;
+    margin-top: 10px;
+  }
+
+  .winner-banner {
+    display: none;
+    background: linear-gradient(135deg, #b8860b, #f5c542);
+    border-radius: 20px;
+    padding: 28px;
+    text-align: center;
+    animation: winnerPop 0.6s ease-out;
+  }
+  .winner-banner.active { display: block; }
+  @keyframes winnerPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .winner-banner .title {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #1a1a1a;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+  .winner-banner .name {
+    font-size: 2.4rem;
+    color: #1a1a1a;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+  .winner-banner .amount {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #8b0000;
+    font-family: "Courier New", monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="left">
+    <div class="header">
+      <div class="brand">🎱 ALDEA BELLA</div>
+      <div class="session" id="sessionCode">------</div>
+    </div>
+
+    <div class="hero">
+      <div class="label">LAST BALL</div>
+      <div class="round-tag real" id="roundTag">IDLE</div>
+      <div class="letter" id="ballLetter"></div>
+      <div class="number" id="ballNumber"><span class="none">—</span></div>
+      <div class="practice-warn" id="practiceWarn" style="display:none;">🎓 PRACTICE — NO PRIZES</div>
+    </div>
+
+    <div class="last-calls" id="lastCalls"></div>
+  </div>
+
+  <div class="right">
+    <div class="claim-banner" id="claimBanner">
+      <div class="title">🔔 LINE CLAIM</div>
+      <div class="player" id="claimPlayer">—</div>
+    </div>
+
+    <div class="claim-window-banner" id="claimWindowBanner">
+      <div class="title" id="cwTitle">🤝 CLAIM WINDOW</div>
+      <div class="counter" id="cwCounter">15s</div>
+      <div class="sub" id="cwSub">Anyone with LINE can join</div>
+    </div>
+
+    <div class="winner-banner" id="winnerBanner">
+      <div class="title" id="winnerTitle">🎉 WINNER</div>
+      <div class="name" id="winnerName">—</div>
+      <div class="amount" id="winnerAmount"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Called Balls</h3>
+      <div class="ball-grid" id="ballGrid"></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="value" id="statPlayers">0</div><div class="label">Players</div></div>
+      <div class="stat"><div class="value" id="statPool">€0</div><div class="label">Pool</div></div>
+    </div>
+
+    <div class="panel qr-box">
+      <h3>🎫 Join the game</h3>
+      <div class="qr-wrap">
+        <img id="qrImg" src="" alt="QR" />
+      </div>
+      <div class="qr-url" id="qrUrl">http://…</div>
+      <div class="qr-hint">Scan with your phone camera</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let ws = null;
+let state = null;
+let claimWindowTimer = null;
+let claimWindowEndsAt = null;
+let hideBannerTimer = null;
+
+function connectWS() {
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  ws = new WebSocket(`${proto}://${location.host}`);
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ type: "display_connect" }));
+  };
+  ws.onmessage = e => handleMessage(JSON.parse(e.data));
+  ws.onclose = () => setTimeout(connectWS, 2000);
+}
+
+function handleMessage(msg) {
+  switch (msg.type) {
+    case "public_state":
+      updateState(msg.state);
+      break;
+    case "round_started":
+      updateState(msg.state);
+      hideAllBanners();
+      break;
+    case "ball_drawn":
+      updateState(msg.state);
+      break;
+    case "round_ended":
+      updateState(msg.state);
+      break;
+    case "claim_window_opened":
+      showClaimWindow(msg.claim, msg.seconds);
+      break;
+    case "claim_window_closed":
+      hideClaimWindow();
+      if (msg.winners && msg.winners.length > 0) {
+        const names = msg.winners.map(w => w.name).join(", ");
+        showWinner(msg.claim, names, msg.perWinner, msg.winners.length > 1);
+      }
+      break;
+    case "claim_received":
+      // Modo "first"
+      showClaimBanner(msg.claim, msg.playerName);
+      break;
+    case "claim_validated":
+      hideClaimBanner();
+      if (msg.valid) {
+        showWinner(msg.claim, msg.playerName, msg.amount, false);
+      }
+      break;
+    case "winner_announcement":
+      if (msg.playerName && msg.amount != null) {
+        showWinner(msg.claim, msg.playerName, msg.amount, false);
+      }
+      break;
+  }
+}
+
+function updateState(newState) {
+  state = newState;
+  if (!state) return;
+
+  $("sessionCode").textContent = state.sessionCode || "------";
+  const round = state.round;
+
+  if (round && round.lastBall) {
+    const prevNum = $("ballNumber").textContent;
+    $("ballLetter").textContent = round.lastBall.letter;
+    const numEl = $("ballNumber");
+    numEl.innerHTML = round.lastBall.number;
+    if (prevNum !== String(round.lastBall.number)) {
+      numEl.classList.remove("pop");
+      void numEl.offsetWidth;
+      numEl.classList.add("pop");
+    }
+  } else {
+    $("ballLetter").textContent = "";
+    $("ballNumber").innerHTML = '<span class="none">—</span>';
+  }
+
+  if (round) {
+    $("roundTag").textContent = round.type === "practice" ? "PRACTICE" : `ROUND #${round.number}`;
+    $("roundTag").className = "round-tag " + (round.type === "practice" ? "practice" : "real");
+    $("practiceWarn").style.display = round.type === "practice" ? "block" : "none";
+  } else {
+    $("roundTag").textContent = "IDLE";
+    $("roundTag").className = "round-tag real";
+    $("practiceWarn").style.display = "none";
+  }
+
+  // Últimas 8 bolas
+  const called = round?.calledBalls || [];
+  const lastEight = called.slice(-8).reverse();
+  $("lastCalls").innerHTML = lastEight.map(b => `
+    <div class="last-call">
+      <div class="lc-letter">${b.letter}</div>
+      <div class="lc-num">${b.number}</div>
+    </div>
+  `).join("");
+
+  // Grid de bolas
+  const grid = $("ballGrid");
+  if (grid.children.length === 0) {
+    for (let i = 1; i <= 75; i++) {
+      const cell = document.createElement("div");
+      cell.className = "ball-cell";
+      cell.dataset.num = i;
+      cell.textContent = i;
+      grid.appendChild(cell);
+    }
+  }
+  const calledSet = new Set(called.map(b => b.number));
+  grid.querySelectorAll(".ball-cell").forEach(c => {
+    c.classList.toggle("called", calledSet.has(+c.dataset.num));
+  });
+
+  $("statPlayers").textContent = state.playerCount ?? 0;
+  if (round?.pool) {
+    $("statPool").textContent = "€" + round.pool.totalCollected.toFixed(2);
+  } else {
+    $("statPool").textContent = "€0";
+  }
+}
+
+function showClaimBanner(claim, playerName) {
+  hideAllBanners();
+  $("claimBanner").querySelector(".title").textContent = `🔔 ${claim.toUpperCase()} CLAIM`;
+  $("claimPlayer").textContent = playerName;
+  $("claimBanner").classList.add("active");
+  if (hideBannerTimer) clearTimeout(hideBannerTimer);
+  hideBannerTimer = setTimeout(hideClaimBanner, 30000);
+}
+
+function hideClaimBanner() {
+  $("claimBanner").classList.remove("active");
+}
+
+function showClaimWindow(claim, seconds) {
+  hideAllBanners();
+  claimWindowEndsAt = Date.now() + seconds * 1000;
+  $("cwTitle").textContent = `🤝 ${claim.toUpperCase()} CLAIM WINDOW`;
+  $("cwSub").textContent = `Anyone with ${claim.toUpperCase()} can join`;
+  $("cwCounter").textContent = seconds + "s";
+  $("claimWindowBanner").classList.add("active");
+  if (claimWindowTimer) clearInterval(claimWindowTimer);
+  claimWindowTimer = setInterval(() => {
+    const left = Math.max(0, Math.ceil((claimWindowEndsAt - Date.now()) / 1000));
+    $("cwCounter").textContent = left + "s";
+    if (left <= 0) { clearInterval(claimWindowTimer); claimWindowTimer = null; }
+  }, 200);
+}
+
+function hideClaimWindow() {
+  if (claimWindowTimer) { clearInterval(claimWindowTimer); claimWindowTimer = null; }
+  $("claimWindowBanner").classList.remove("active");
+}
+
+function showWinner(claim, name, amount, shared) {
+  hideAllBanners();
+  $("winnerTitle").textContent = claim === "bingo" ? "🏆 BINGO WINNER" : "🥉 LINE WINNER";
+  $("winnerName").textContent = name;
+  $("winnerAmount").textContent = shared
+    ? `€${amount.toFixed(2)} each`
+    : `€${amount.toFixed(2)}`;
+  $("winnerBanner").classList.add("active");
+  if (hideBannerTimer) clearTimeout(hideBannerTimer);
+  hideBannerTimer = setTimeout(() => {
+    $("winnerBanner").classList.remove("active");
+  }, 8000);
+}
+
+function hideAllBanners() {
+  $("claimBanner").classList.remove("active");
+  $("claimWindowBanner").classList.remove("active");
+  $("winnerBanner").classList.remove("active");
+  if (hideBannerTimer) { clearTimeout(hideBannerTimer); hideBannerTimer = null; }
+}
+
+async function loadQR() {
+  try {
+    const res = await fetch("/qr");
+    const data = await res.json();
+    $("qrImg").src = data.qr;
+    $("qrUrl").textContent = data.url;
+  } catch (e) {}
+}
+
+connectWS();
+loadQR();
+setInterval(loadQR, 60000);
+
+// === RECONEXIÓN AUTOMÁTICA (NUEVO) ===
+(function() {
+  if (typeof ws === "undefined") return;
+  let _backoff = 1000;
+  const _wsUrl = ws.url;
+  const _origOnClose = ws.onclose;
+  ws.onclose = function(e) {
+    if (_origOnClose) _origOnClose.call(this, e);
+    setTimeout(function() {
+      try {
+        ws = new WebSocket(_wsUrl);
+        ws.onopen = function() {
+          _backoff = 1000;
+          ws.send(JSON.stringify({ type: "display_connect" }));
+        };
+        ws.onmessage = window._origOnMessageDisplay || ws.onmessage;
+        ws.onclose = arguments.callee;
+      } catch (err) {}
+    }, _backoff);
+    _backoff = Math.min(_backoff * 2, 30000);
+  };
+  window._origOnMessageDisplay = ws.onmessage;
+})();
+
+
+</script>
+</body>
+</html>

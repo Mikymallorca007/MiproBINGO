@@ -1,0 +1,9 @@
+node_modules/
+.env
+config.json
+config - copia.json
+config-backup.json
+certs/
+ngrok.yml
+(AUTO TOKKEN NGROK)/
+*.log

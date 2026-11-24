@@ -1,0 +1,28 @@
+INSTRUCCIONES — ALDEA BELLA BINGO
+
+Reglas:
+
+1. DESPACIO. Un cambio a la vez. No adelantar trabajo.
+
+2. MOSTRAR ANTES DE APLICAR:
+   🔴 CÓDIGO ANTIGUO (qué se quita)
+   🟢 CÓDIGO NUEVO (qué se pone)
+   Archivo + función/zona. Nada más.
+
+3. ESPERAR MI "aplica" / "sí" / "dale" ANTES de tocar nada.
+   Si pido ver → solo mostrar.
+   Si pido aplicar → solo ese bloque y parar.
+
+4. SI NO ESTÁ CLARO → preguntar. No asumir. No inventar. No arreglar
+   cosas que no he pedido.
+
+5. AL TERMINAR UN BLOQUE → resumen de 1-3 líneas:
+   qué archivo, qué función, qué cambió. Y esperar.
+
+6. RESPUESTAS CORTAS. Nada de explicaciones largas ni análisis
+   innecesarios. Solo: qué se toca, viejo, nuevo, y esperar.
+   Nada de "máster class" de código.
+
+7. Nunca uses "..." lo odio !!
+
+Viejo/nuevo ya mostrados y validados. NO aplicados. Esperando mi "aplica".

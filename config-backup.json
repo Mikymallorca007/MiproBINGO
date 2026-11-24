@@ -1,0 +1,297 @@
+{
+  "baseConfig": {
+    "barName": "Bar Aldea Bella 2026",
+    "entryFee": 0,
+    "split": {
+      "line": 35,
+      "bingo": 65,
+      "house": 0
+    },
+    "options": {
+      "roundToHalf": true,
+      "carryOverBingo": true,
+      "lockOnStart": true,
+      "prizeMode": "share",
+      "claimWindow": 10,
+      "splitRoundStep": 0.5,
+      "autoDrawDelay": 4,
+      "ballHistorySize": 5,
+      "freeCells": 8,
+      "ballsPerColumn": 15,
+      "unattendedMode": "free",
+      "unattendedCountdown": 10,
+      "sounds": {
+        "enabled": true,
+        "voiceBalls": true,
+        "applauseOnLine": true,
+        "applauseOnBingo": true,
+        "applauseOnRoundStart": false,
+        "playOnMaster": true,
+        "playOnPlayers": true,
+        "playOnDisplay": true,
+        "volume": 0.75
+      },
+      "unattendedResumeCountdown": 5,
+      "freeCellsPerRow": 2
+    }
+  },
+  "presets": [
+    {
+      "name": "Bar",
+      "icon": "🍺",
+      "entryFee": 1.5,
+      "split": {
+        "line": 30,
+        "bingo": 60,
+        "house": 10
+      },
+      "options": {
+        "roundToHalf": true,
+        "carryOverBingo": true,
+        "lockOnStart": true,
+        "prizeMode": "share",
+        "claimWindow": 10,
+        "splitRoundStep": 0.5,
+        "autoDrawDelay": 4,
+        "ballHistorySize": 5,
+        "freeCells": 8,
+        "unattendedMode": "off",
+        "unattendedCountdown": 30,
+        "ballsPerColumn": 15,
+        "sounds": {
+          "enabled": true,
+          "voiceBalls": true,
+          "applauseOnLine": false,
+          "applauseOnBingo": true,
+          "applauseOnRoundStart": false,
+          "playOnMaster": true,
+          "playOnPlayers": true,
+          "playOnDisplay": true,
+          "volume": 1
+        },
+        "freeCellsPerRow": 2
+      }
+    },
+    {
+      "name": "Casa",
+      "icon": "🏠",
+      "entryFee": 1,
+      "split": {
+        "line": 35,
+        "bingo": 65,
+        "house": 0
+      },
+      "options": {
+        "roundToHalf": true,
+        "carryOverBingo": true,
+        "lockOnStart": true,
+        "prizeMode": "share",
+        "claimWindow": 10,
+        "splitRoundStep": 0.5,
+        "autoDrawDelay": 4,
+        "ballHistorySize": 5,
+        "freeCells": 8,
+        "unattendedMode": "off",
+        "unattendedCountdown": 30,
+        "ballsPerColumn": 15,
+        "sounds": {
+          "enabled": true,
+          "voiceBalls": true,
+          "applauseOnLine": false,
+          "applauseOnBingo": true,
+          "applauseOnRoundStart": false,
+          "playOnMaster": true,
+          "playOnPlayers": true,
+          "playOnDisplay": true,
+          "volume": 0.5
+        },
+        "freeCellsPerRow": 2
+      }
+    },
+    {
+      "name": "FULL HOUSE",
+      "icon": "💎💎",
+      "entryFee": 1.5,
+      "split": {
+        "line": 0,
+        "bingo": 90,
+        "house": 10
+      },
+      "options": {
+        "roundToHalf": true,
+        "carryOverBingo": true,
+        "lockOnStart": true,
+        "prizeMode": "share",
+        "claimWindow": 10,
+        "splitRoundStep": 0.5,
+        "autoDrawDelay": 4,
+        "ballHistorySize": 5,
+        "freeCells": 8,
+        "unattendedMode": "off",
+        "unattendedCountdown": 30,
+        "ballsPerColumn": 15,
+        "sounds": {
+          "enabled": true,
+          "voiceBalls": true,
+          "applauseOnLine": false,
+          "applauseOnBingo": true,
+          "applauseOnRoundStart": false,
+          "playOnMaster": true,
+          "playOnPlayers": true,
+          "playOnDisplay": true,
+          "volume": 0.5
+        },
+        "freeCellsPerRow": 2
+      }
+    },
+    {
+      "name": "CASA-DSTDO",
+      "icon": "🏠👻",
+      "entryFee": 0,
+      "split": {
+        "line": 35,
+        "bingo": 65,
+        "house": 0
+      },
+      "options": {
+        "roundToHalf": true,
+        "carryOverBingo": true,
+        "lockOnStart": true,
+        "prizeMode": "share",
+        "claimWindow": 10,
+        "splitRoundStep": 0.5,
+        "autoDrawDelay": 4,
+        "ballHistorySize": 5,
+        "freeCells": 8,
+        "ballsPerColumn": 15,
+        "unattendedMode": "free",
+        "unattendedCountdown": 10,
+        "sounds": {
+          "enabled": true,
+          "voiceBalls": true,
+          "applauseOnLine": true,
+          "applauseOnBingo": true,
+          "applauseOnRoundStart": false,
+          "playOnMaster": true,
+          "playOnPlayers": true,
+          "playOnDisplay": true,
+          "volume": 0.75
+        },
+        "unattendedResumeCountdown": 5,
+        "freeCellsPerRow": 2
+      }
+    },
+    {
+      "name": "TEST",
+      "icon": "⭐",
+      "entryFee": 2,
+      "split": {
+        "line": 35,
+        "bingo": 65,
+        "house": 0
+      },
+      "options": {
+        "roundToHalf": true,
+        "carryOverBingo": true,
+        "lockOnStart": true,
+        "prizeMode": "share",
+        "claimWindow": 10,
+        "splitRoundStep": 0.5,
+        "autoDrawDelay": 4,
+        "ballHistorySize": 5,
+        "freeCells": 8,
+        "ballsPerColumn": 15,
+        "unattendedMode": "free",
+        "unattendedCountdown": 10,
+        "sounds": {
+          "enabled": true,
+          "voiceBalls": true,
+          "applauseOnLine": true,
+          "applauseOnBingo": true,
+          "applauseOnRoundStart": false,
+          "playOnMaster": true,
+          "playOnPlayers": true,
+          "playOnDisplay": true,
+          "volume": 0.6
+        },
+        "unattendedResumeCountdown": 5,
+        "freeCellsPerRow": 2
+      }
+    },
+    {
+      "name": "MINI",
+      "icon": "⭐🎱⭐",
+      "entryFee": 1.5,
+      "split": {
+        "line": 40,
+        "bingo": 60,
+        "house": 0
+      },
+      "options": {
+        "roundToHalf": true,
+        "carryOverBingo": true,
+        "lockOnStart": true,
+        "prizeMode": "share",
+        "claimWindow": 10,
+        "splitRoundStep": 0.5,
+        "autoDrawDelay": 4,
+        "ballHistorySize": 5,
+        "freeCells": 8,
+        "unattendedMode": "free",
+        "unattendedCountdown": 10,
+        "unattendedResumeCountdown": 5,
+        "ballsPerColumn": 10,
+        "sounds": {
+          "enabled": true,
+          "voiceBalls": true,
+          "applauseOnLine": true,
+          "applauseOnBingo": true,
+          "applauseOnRoundStart": false,
+          "playOnMaster": true,
+          "playOnPlayers": true,
+          "playOnDisplay": true,
+          "volume": 0.7
+        },
+        "freeCellsPerRow": 2
+      }
+    }
+  ],
+  "publicUrl": "https://imposing-foe-untainted.ngrok-free.dev",
+  "sessionCode": "123456",
+  "lastConfig": {
+    "barName": "Bar Aldea Bella 2026",
+    "entryFee": 0,
+    "split": {
+      "line": 35,
+      "bingo": 65,
+      "house": 0
+    },
+    "options": {
+      "roundToHalf": true,
+      "carryOverBingo": true,
+      "lockOnStart": true,
+      "prizeMode": "share",
+      "claimWindow": 10,
+      "splitRoundStep": 0.5,
+      "autoDrawDelay": 4,
+      "ballHistorySize": 5,
+      "freeCells": 8,
+      "ballsPerColumn": 15,
+      "unattendedMode": "free",
+      "unattendedCountdown": 10,
+      "sounds": {
+        "enabled": true,
+        "voiceBalls": true,
+        "applauseOnLine": true,
+        "applauseOnBingo": true,
+        "applauseOnRoundStart": false,
+        "playOnMaster": true,
+        "playOnPlayers": true,
+        "playOnDisplay": true,
+        "volume": 0.75
+      },
+      "unattendedResumeCountdown": 5,
+      "freeCellsPerRow": 2
+    }
+  }
+}

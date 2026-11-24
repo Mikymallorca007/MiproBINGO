@@ -1,0 +1,17 @@
+1. cmd → cd %USERPROFILE%\aldeabella-bingo → npm start
+2. Navegador PC → http://localhost:3000/master → login
+3. Móviles → http://TU_IP:3000 → código + nombre → Join
+4. Master → Queue → Mark Paid → Approve
+5. Master → Game → Start Real Round
+6. Master → Draw Ball (repetir)
+7. Si alguien canta LINE/BINGO → Validate o Reject
+8. Next Round para la siguiente
+
+
+
+
+💡 Consejo para el futuro
+Cuando hagas corta-pega grandes en archivos Node, antes de reiniciar el servidor haz siempre:
+
+cmd
+node -c server.js
