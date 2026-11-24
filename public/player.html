@@ -55,7 +55,7 @@
 
 
   /* ============ LOGIN ============ */
-  .login-hero { text-align: center; margin-top: 40px; margin-bottom: 32px; }
+  .login-hero { text-align: center; margin-top: 32px; margin-bottom: 24px; }
   .login-hero h1 {
     font-size: 2.2rem; margin: 0 0 6px;
     background: linear-gradient(90deg, #f5c542, #e8a020);
@@ -97,6 +97,36 @@
     background: linear-gradient(180deg, #f5c542, #e8a020);
     color: #1a1a1a; width: 100%;
   }
+  .create-room-box {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px dashed #2a4a72;
+    text-align: center;
+  }
+  .create-room-label {
+    font-size: 0.78rem;
+    color: #90a4c4;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+  }
+  .btn-create-room {
+    background: #16253d;
+    color: #f5c542;
+    border: 2px solid #2a4a72;
+    width: 100%;
+    padding: 13px 16px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-create-room:hover {
+    border-color: #f5c542;
+    background: #1e3555;
+  }
+  .btn-create-room:active { transform: scale(0.98); }
   .error { color: #ef5350; text-align: center; margin-top: 12px; min-height: 20px; font-size: 0.9rem; }
 
   /* ============ WAITING ============ */
@@ -1382,6 +1412,11 @@
   </div>
   <button class="btn btn-primary" id="btnJoin" data-i18n="login.join">🎫 Join the game</button>
   <div class="error" id="loginError"></div>
+
+  <div class="create-room-box">
+    <div class="create-room-label">¿Quieres jugar con tus amigos?</div>
+    <button type="button" class="btn-create-room" id="btnGenerateRoomCode">🎲 Crear sala con código</button>
+  </div>
 </div>
 
 <div class="screen" id="screen-waiting">
@@ -1715,6 +1750,15 @@
 
 <script>
 const $ = id => document.getElementById(id);
+
+function generateRoomCode(length = 6) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < length; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
 
 function iconLineHtml(extraClass = "") {
   const cells = "<span></span>".repeat(5);
@@ -2970,7 +3014,7 @@ function renderPoolIcons() {
   } else {
     lineItem.classList.add("won-by-other");
     iconLine.innerHTML = iconLineHtml("locked");
-    poolLine.textContent = "€" + poolValues.line.toFixed(2);
+    poolLine.textContent = "€" + roundPrizes.line.perWinner.toFixed(2);
   }
 
   const bingoItem = $("prizeBingoItem");
@@ -2989,7 +3033,7 @@ function renderPoolIcons() {
   } else {
     bingoItem.classList.add("won-by-other");
     iconBingo.innerHTML = iconBingoHtml("locked");
-    poolBingo.textContent = "€" + poolValues.bingo.toFixed(2);
+    poolBingo.textContent = "€" + roundPrizes.bingo.perWinner.toFixed(2);
   }
 }
 
@@ -3986,6 +4030,23 @@ function leaveGame() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  const btnGenRoom = $("btnGenerateRoomCode");
+  if (btnGenRoom) {
+    btnGenRoom.onclick = () => {
+      const newCode = generateRoomCode(6);
+      const inputCode = $("inputCode");
+      if (inputCode) {
+        inputCode.value = newCode;
+        inputCode.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      toast("🎲 Código de sala creado: " + newCode, "info", 3000);
+      const inputName = $("inputName");
+      if (inputName && !inputName.value.trim()) {
+        inputName.focus();
+      }
+    };
+  }
+
   const btnBackToLogin = $("btnBackToLogin");
   if (btnBackToLogin) {
     btnBackToLogin.onclick = () => {
