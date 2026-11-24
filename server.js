@@ -18,7 +18,7 @@ const moderation = require("./lib/moderation");
 const lock = require("./lib/lock");
 
 const PORT = Number(process.env.PORT) || 3000;
-const MASTER_PASSWORD = process.env.MASTER_PASSWORD || "561910mm";
+const MASTER_PASSWORD = process.env.MASTER_PASSWORD || "aldeabella2026!";
 const IS_PROD = process.env.NODE_ENV === "production";
 let BAR_NAME = process.env.BAR_NAME || "Bar Aldea Bella";
 
@@ -595,6 +595,61 @@ function handleMessage(ws, msg, ip) {
       send(ws, { type: "master_login_ok", state: getMasterState(), qr: null });
       break;
     }
+
+case "player_create_room": {
+      const cleanCode = String(msg.code || "")
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "");
+      const cleanName = moderation.sanitizeName
+        ? moderation.sanitizeName(msg.name)
+        : String(msg.name || "").trim().toUpperCase().slice(0, 20);
+
+      if (!cleanCode || cleanCode.length < 4) {
+        send(ws, { type: "room_create_error", message: "Código de sala no válido" });
+        return;
+      }
+      if (!cleanName) {
+        send(ws, { type: "room_create_error", message: "Nombre no válido" });
+        return;
+      }
+      if (moderation.isOffensive(cleanName, ALL_CONFIG)) {
+        send(ws, { type: "room_create_error", message: "Elige otro nombre" });
+        return;
+      }
+
+      const isRoundActive = game.round &&
+        (game.round.status === "playing" || game.round.status === "paused" || game.round.status === "paused_manual");
+      if (isRoundActive) {
+        send(ws, { type: "room_create_error", message: "Hay una partida en curso" });
+        return;
+      }
+
+      // Reinicia estado de sala previa si hubiera jugadores/ronda anterior
+      if (game.autoDraw.enabled) stopAutoDraw();
+      if (game.waitingRoom.countdownTimer) cancelWaitingRoomCountdown("new_room_created");
+      game.players = game.players.filter(p => p.role === "master" || p.role === "display");
+      game.round = null;
+      game.carryOver = 0;
+
+      // Establece el nuevo código de sala activo
+      game.sessionCode = cleanCode;
+      ALL_CONFIG.sessionCode = cleanCode;
+      saveLastConfig();
+
+      logEvent("player_created_room", { code: cleanCode, creator: cleanName, ip });
+
+      broadcastToMasters({ type: "session_code", code: cleanCode });
+      pushMasterState();
+      pushPublicState();
+      pushWaitingRoomState();
+
+      send(ws, { type: "room_created", code: cleanCode, name: cleanName });
+      break;
+    }
+
+
+
 
     case "generate_new_session": {
       if (ws.role !== "master") return;
