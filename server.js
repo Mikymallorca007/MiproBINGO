@@ -18,7 +18,7 @@ const moderation = require("./lib/moderation");
 const lock = require("./lib/lock");
 
 const PORT = Number(process.env.PORT) || 3000;
-const MASTER_PASSWORD = process.env.MASTER_PASSWORD || "aldeabella2026!";
+const MASTER_PASSWORD = process.env.MASTER_PASSWORD || "561910mm";
 const IS_PROD = process.env.NODE_ENV === "production";
 let BAR_NAME = process.env.BAR_NAME || "Bar Aldea Bella";
 
