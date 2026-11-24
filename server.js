@@ -288,8 +288,7 @@ function isCupoFull() {
 }
 
 function startWaitingRoomCountdown() {
-  const hasCupo = getMaxPlayers() > 0;
-  if (!isUnattendedMode() && !hasCupo) return;
+  if (!isUnattendedMode()) return;
   if (game.round && game.round.status !== "ended") return;
   if (game.waitingRoom.countdownTimer) return;
   if (!isAllReady() && !isCupoFull()) return;
@@ -755,7 +754,7 @@ function handleMessage(ws, msg, ip) {
 
       player.paid = true;
       player.status = "approved";
-      player.readyForNextRound = true;
+      player.readyForNextRound = false;
 
       send(ws, {
         type: "you_approved", barName: BAR_NAME,
@@ -764,12 +763,12 @@ function handleMessage(ws, msg, ip) {
       });
       send(ws, { type: "sounds_config_changed", sounds: game.config.config.options.sounds || null });
 
-      const approvedNow = getApprovedPlayers().length;
+      const { ready: readyNow, total: approvedNow } = getReadyCount();
       const max = getMaxPlayers();
       send(ws, {
         type: "waiting_room_state",
         unattendedMode: game.config.config.options.unattendedMode,
-        ready: approvedNow, total: approvedNow, maxPlayers: max,
+        ready: readyNow, total: approvedNow, maxPlayers: max,
         slotsLeft: Math.max(0, max - approvedNow),
         cupoFull: approvedNow >= max,
         countdownActive: !!game.waitingRoom.countdownEndsAt,
@@ -786,7 +785,7 @@ function handleMessage(ws, msg, ip) {
       pushMasterState();
       pushWaitingRoomState();
 
-      if (isCupoFull()) {
+      if (isAllReady() || isCupoFull()) {
         startWaitingRoomCountdown();
       }
       break;
