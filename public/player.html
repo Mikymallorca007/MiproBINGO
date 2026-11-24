@@ -4140,28 +4140,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // === RECONEXIÓN AUTOMÁTICA (NUEVO) ===
 (function() {
-  if (typeof ws === "undefined") return;
-  let _backoff = 1000;
-  const _wsUrl = ws.url;
-  const _origOnClose = ws.onclose;
-  ws.onclose = function(e) {
-    if (_origOnClose) _origOnClose.call(this, e);
-    setTimeout(function() {
-      try {
-        ws = new WebSocket(_wsUrl);
-        ws.onopen = function() {
-          _backoff = 1000;
-          if (typeof send === "function" && typeof MY_NAME !== "undefined" && typeof ROOM_CODE !== "undefined") {
-            send({ type: "player_join", code: ROOM_CODE, name: MY_NAME });
-          }
-        };
-        ws.onmessage = window._origOnMessage || ws.onmessage;
-        ws.onclose = arguments.callee;
-      } catch (err) {}
-    }, _backoff);
-    _backoff = Math.min(_backoff * 2, 30000);
-  };
-  window._origOnMessage = ws.onmessage;
+  const _proto = location.protocol === "https:" ? "wss" : "ws";
+  const _wsUrl = (typeof ws !== "undefined" && ws && ws.url)
+    ? ws.url
+    : `${_proto}://${location.host}`;
+
+  function attachReconnect(socket) {
+    if (!socket) return;
+    let _backoff = 1000;
+    const _origOnClose = socket.onclose;
+    window._origOnMessage = socket.onmessage || window._origOnMessage;
+
+    socket.onclose = function(e) {
+      if (_origOnClose) _origOnClose.call(this, e);
+      setTimeout(function reconnect() {
+        try {
+          const nextWs = new WebSocket(_wsUrl);
+          nextWs.onopen = function() {
+            _backoff = 1000;
+            const code = (typeof ROOM_CODE !== "undefined" && ROOM_CODE) || (typeof myCode !== "undefined" && myCode);
+            const name = (typeof MY_NAME !== "undefined" && MY_NAME) || (typeof myName !== "undefined" && myName);
+            if (code && name && nextWs.readyState === WebSocket.OPEN) {
+              nextWs.send(JSON.stringify({ type: "player_join", code, name }));
+            }
+          };
+          nextWs.onmessage = window._origOnMessage || null;
+          attachReconnect(nextWs);
+          if (typeof ws !== "undefined") ws = nextWs;
+        } catch (err) {
+          _backoff = Math.min(_backoff * 2, 30000);
+          setTimeout(reconnect, _backoff);
+        }
+      }, _backoff);
+      _backoff = Math.min(_backoff * 2, 30000);
+    };
+  }
+
+  if (typeof ws !== "undefined" && ws) {
+    attachReconnect(ws);
+  }
 })();
 
 
