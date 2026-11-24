@@ -963,26 +963,6 @@
     </div>
 
 
-
-    <div class="card">
-      <h3>👥 Cupo de jugadores</h3>
-      <div style="font-size:0.9rem; color:#90a4c4; margin-bottom:12px;">
-        ⚙️ Número máximo de jugadores. Cuando se alcance, arranca la cuenta atrás y empieza la partida automáticamente.
-      </div>
-      <div class="row" style="gap:10px; align-items:center;">
-        <input type="number" id="maxPlayersInput" min="2" max="50" value="15"
-               style="width:100px; padding:12px 16px; background:#0a1424; border:2px solid #2a4a72; border-radius:10px; color:#fff; font-size:1rem; text-align:center; font-weight:700;" />
-        <span style="color:#90a4c4; font-size:0.9rem;">jugadores</span>
-        <button class="btn btn-primary" id="btnSetMaxPlayers">💾 Aplicar</button>
-        <span id="maxPlayersStatus" style="font-size:0.85rem; color:#66bb6a;"></span>
-      </div>
-      <div style="font-size:0.8rem; color:#7a90b4; margin-top:10px;">
-        💡 Si ya hay jugadores dentro, el cupo solo bloquea entradas nuevas. Bajar el cupo por debajo del número actual no expulsa a nadie.
-      </div>
-    </div>
-
-
-
     <div class="card">
       <h3>🎱 Ball History</h3>
       <div style="font-size:0.9rem; color:#90a4c4; margin-bottom:12px;">
@@ -1581,19 +1561,6 @@ function handleMessage(msg) {
       break;
 
 
-    case "max_players_changed":
-      if (state) {
-        if (!state.config) state.config = {};
-        if (!state.config.options) state.config.options = {};
-        state.config.options.maxPlayers = msg.maxPlayers;
-      }
-      {
-        const inp = document.getElementById("maxPlayersInput");
-        if (inp && document.activeElement !== inp) inp.value = msg.maxPlayers;
-      }
-      break;
-
-
 
     case "bar_name_changed":
       if (msg.name) {
@@ -1666,14 +1633,7 @@ function updateState(newState) {
   $("statRound").textContent = state.round ? `#${state.round.number} ${state.round.type}` : "—";
   $("statCarry").textContent = `€${(state.carryOver || 0).toFixed(2)}`;
 
-  // === CUPO DE JUGADORES (NUEVO) ===
-  {
-    const inp = $("maxPlayersInput");
-    const maxP = state.config?.options?.maxPlayers;
-    if (inp && maxP != null && document.activeElement !== inp) {
-      inp.value = maxP;
-    }
-  }
+
 
   const pendingCount = state.pendingCount || 0;
   const badge = $("queueBadge");
