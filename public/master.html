@@ -1302,21 +1302,25 @@ function handleMessage(msg) {
       break;
 
 case "master_login_ok":
-      loginScreen.style.display = "none";
-      app.classList.add("active");
-      $("loginError").textContent = "";
-      updateState(msg.state);
-      if (msg.state?.config?.options?.ballHistorySize !== 5) {
-        sendConfigUpdate({ options: { ballHistorySize: 5 } });
-      }
-      if ((msg.state?.config?.options?.unattendedMode || "off") !== "free") {
-        if (typeof ws !== "undefined" && ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: "master_set_unattended_mode", mode: "free" }));
-        }
-      }
-      loadQR();
-      requestWakeLock();
-      break;
+  loginScreen.style.display = "none";
+  app.classList.add("active");
+  $("loginError").textContent = "";
+  updateState(msg.state);
+  if (msg.state?.config?.options?.ballHistorySize !== 5) {
+    sendConfigUpdate({ options: { ballHistorySize: 5 } });
+  }
+  if ((msg.state?.config?.options?.unattendedMode || "off") !== "free") {
+    if (typeof ws !== "undefined" && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "master_set_unattended_mode", mode: "free" }));
+    }
+  }
+
+  // 🔥 CÓDIGO QUEMADO — arranca siempre con 123456
+  ws.send(JSON.stringify({ type: "master_set_session_code", code: "123456" }));
+
+  loadQR();
+  requestWakeLock();
+  break;
 
     case "master_state":
       updateState(msg.state);
@@ -3049,7 +3053,7 @@ $("btnRegenerate").onclick = async () => {
 };
 
 $("btnSetCustomCode").onclick = async () => {
-  const current = state?.sessionCode || "";
+  const current = state?.sessionCode || "123456";
   const input = await promptDialog({
     icon: "✏️",
     title: "Set Custom Code",
