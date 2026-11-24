@@ -1306,6 +1306,9 @@ function handleMessage(msg) {
       app.classList.add("active");
       $("loginError").textContent = "";
       updateState(msg.state);
+      if (msg.state?.config?.options?.ballHistorySize !== 5) {
+        sendConfigUpdate({ options: { ballHistorySize: 5 } });
+      }
       loadQR();
       requestWakeLock();
       break;
@@ -2296,7 +2299,7 @@ function renderConfig() {
     b.classList.toggle("active", +b.dataset.ballDelay === currentDelay);
   });
 
-  const currentHistorySize = Number(options.ballHistorySize) || 5;
+const currentHistorySize = Number(options.ballHistorySize) || 5;
   document.querySelectorAll(".fee-btn[data-ball-history]").forEach(b => {
     b.classList.toggle("active", Number(b.dataset.ballHistory) === currentHistorySize);
   });
@@ -3248,9 +3251,6 @@ setupSliders();
     if (e.key === "Enter") btn.click();
   });
 })();
-
-
-
 
 </script>
 </body>
