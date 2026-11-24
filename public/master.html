@@ -1199,7 +1199,7 @@ const readyState = {
   total: 0
 };
 
-let unattendedModeLocal = "off";
+let unattendedModeLocal = "free";
 let unattendedCountdownLocal = 30;
 let unattendedResumeCountdownLocal = 10;
 let waitingRoomState = {
@@ -1301,13 +1301,18 @@ function handleMessage(msg) {
       $("loginError").textContent = "❌ Wrong password";
       break;
 
-    case "master_login_ok":
+case "master_login_ok":
       loginScreen.style.display = "none";
       app.classList.add("active");
       $("loginError").textContent = "";
       updateState(msg.state);
       if (msg.state?.config?.options?.ballHistorySize !== 5) {
         sendConfigUpdate({ options: { ballHistorySize: 5 } });
+      }
+      if ((msg.state?.config?.options?.unattendedMode || "off") !== "free") {
+        if (typeof ws !== "undefined" && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "master_set_unattended_mode", mode: "free" }));
+        }
       }
       loadQR();
       requestWakeLock();
@@ -2227,7 +2232,7 @@ function renderUnattendedConfig() {
   const cfg = state.config || {};
   const options = cfg.options || {};
 
-  unattendedModeLocal = options.unattendedMode || "off";
+  unattendedModeLocal = options.unattendedMode || "free";
   unattendedCountdownLocal = options.unattendedCountdown || 30;
   unattendedResumeCountdownLocal = options.unattendedResumeCountdown || 10;
 
@@ -3251,6 +3256,9 @@ setupSliders();
     if (e.key === "Enter") btn.click();
   });
 })();
+
+
+
 
 </script>
 </body>
