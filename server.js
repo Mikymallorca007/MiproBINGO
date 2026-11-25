@@ -11,79 +11,87 @@ const path = require("path");
 const fs = require("fs");
 const QRCode = require("qrcode");
 
+const { createClient } = require('@supabase/supabase-js');
+
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+  throw new Error("Faltan SUPABASE_URL o SUPABASE_ANON_KEY en .env");
+}
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
 const cards = require("./lib/cards");
 const economy = require("./lib/economy");
 const bots = require("./lib/bots");
 const moderation = require("./lib/moderation");
 const lock = require("./lib/lock");
 
+lock.setSupabaseClient(supabase);
+
 const PORT = Number(process.env.PORT) || 3000;
 const MASTER_PASSWORD = process.env.MASTER_PASSWORD || "aldeabella2026!";
 const IS_PROD = process.env.NODE_ENV === "production";
 let BAR_NAME = process.env.BAR_NAME || "Bar Aldea Bella";
 
-const persistedConfig = lock.loadConfig();
-
-if (persistedConfig?.baseConfig?.barName) {
-  BAR_NAME = persistedConfig.baseConfig.barName;
-}
-
-const SAVED_SESSION_CODE = persistedConfig?.sessionCode || null;
-const BASE_CONFIG = persistedConfig?.baseConfig || {
-  entryFee: 1.5,
-  split: { line: 35, bingo: 55, house: 10 },
-  options: {
-    roundToHalf: true,
-    carryOverBingo: true,
-    lockOnStart: true,
-    prizeMode: "first",
-    claimWindow: 15,
-    splitRoundStep: 0.5,
-    autoDrawDelay: 3,
-    ballHistorySize: 3,
-    freeCells: 8,
-    freeCellsPerRow: 2,
-    ballsPerColumn: 15,
-    maxPlayers: 15,
-    unattendedMode: "off",
-    unattendedCountdown: 30,
-    unattendedResumeCountdown: 10,
-    sounds: {
-      enabled: true,
-      voiceBalls: true,
-      applauseOnLine: false,
-      applauseOnBingo: true,
-      applauseOnRoundStart: false,
-      playOnMaster: true,
-      playOnPlayers: true,
-      playOnDisplay: true,
-      volume: 0.7
-    }
-  }
-};
-
-if (BASE_CONFIG.options && BASE_CONFIG.options.maxPlayers === undefined) {
-  BASE_CONFIG.options.maxPlayers = 15;
-}
-
+// Variables globales (se llenarán en init)
+let SAVED_SESSION_CODE = null;
+let BASE_CONFIG = null;
+let ALL_CONFIG = null;
 const MAX_PRESETS = 6;
-let ALL_CONFIG = persistedConfig || { baseConfig: BASE_CONFIG, presets: [] };
 
-const lastConfig = persistedConfig?.lastConfig;
-if (lastConfig) {
-  if (lastConfig.entryFee !== undefined) BASE_CONFIG.entryFee = lastConfig.entryFee;
-  if (lastConfig.split) BASE_CONFIG.split = JSON.parse(JSON.stringify(lastConfig.split));
-  if (lastConfig.options) BASE_CONFIG.options = JSON.parse(JSON.stringify(lastConfig.options));
-}
+async function initConfig() {
+  console.log("⏳ Conectando con Supabase para cargar configuración...");
+  let persistedConfig = await lock.loadConfig();
 
-if (!ALL_CONFIG.presets) ALL_CONFIG.presets = [];
-while (ALL_CONFIG.presets.length < MAX_PRESETS) ALL_CONFIG.presets.push(null);
-if (ALL_CONFIG.presets.length > MAX_PRESETS) {
-  ALL_CONFIG.presets = ALL_CONFIG.presets.slice(0, MAX_PRESETS);
-}
+  if (!persistedConfig) {
+    console.log("🌱 Supabase vacío. Creando configuración por defecto...");
+    persistedConfig = {
+      baseConfig: {
+        barName: "ALDEA BELLA",
+        entryFee: 1.5,
+        split: { line: 35, bingo: 55, house: 10 },
+        options: {
+          roundToHalf: true, carryOverBingo: true, lockOnStart: true, prizeMode: "first",
+          claimWindow: 15, splitRoundStep: 0.5, autoDrawDelay: 3, ballHistorySize: 3,
+          freeCells: 8, freeCellsPerRow: 2, ballsPerColumn: 15, maxPlayers: 15,
+          unattendedMode: "off", unattendedCountdown: 30, unattendedResumeCountdown: 10,
+          sounds: {
+            enabled: true, voiceBalls: true, applauseOnLine: false, applauseOnBingo: true,
+            applauseOnRoundStart: false, playOnMaster: true, playOnPlayers: true, playOnDisplay: true, volume: 0.7
+          }
+        }
+      },
+      presets: [null, null, null, null, null, null],
+      publicUrl: process.env.PUBLIC_URL || ""
+    };
+    await lock.saveConfig(persistedConfig);
+  }
 
-if (!ALL_CONFIG.publicUrl) {
-  ALL_CONFIG.publicUrl = process.env.PUBLIC_URL || "https://imposing-foe-untainted.ngrok-free.dev";
+  if (persistedConfig?.baseConfig?.barName) {
+    BAR_NAME = persistedConfig.baseConfig.barName;
+  }
+  SAVED_SESSION_CODE = persistedConfig?.sessionCode || null;
+  BASE_CONFIG = persistedConfig?.baseConfig || {};
+  
+  if (BASE_CONFIG.options && BASE_CONFIG.options.maxPlayers === undefined) {
+    BASE_CONFIG.options.maxPlayers = 15;
+  }
+
+  ALL_CONFIG = persistedConfig;
+
+  if (!ALL_CONFIG.presets) ALL_CONFIG.presets = [];
+  while (ALL_CONFIG.presets.length < MAX_PRESETS) ALL_CONFIG.presets.push(null);
+  if (ALL_CONFIG.presets.length > MAX_PRESETS) {
+    ALL_CONFIG.presets = ALL_CONFIG.presets.slice(0, MAX_PRESETS);
+  }
+
+  if (!ALL_CONFIG.publicUrl) {
+    ALL_CONFIG.publicUrl = process.env.PUBLIC_URL || "";
+  }
+  
+  console.log("✅ Configuración cargada.");
 }
 
 // ============================================================
@@ -95,8 +103,15 @@ const keyPath = path.join(certsDir, "key.pem");
 
 const app = express();
 
+// AÑADIR ESTAS 4 LÍNEAS AQUÍ:
+app.use(express.static(path.join(__dirname, "public")));
+app.get("/master", (req, res) => res.sendFile(path.join(__dirname, "public", "master.html")));
+app.get("/display", (req, res) => res.sendFile(path.join(__dirname, "public", "display.html")));
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "player.html")));
+
 let server;
 if (IS_PROD) {
+
   server = http.createServer(app);
 } else {
   if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
@@ -107,37 +122,11 @@ if (IS_PROD) {
   server = https.createServer(sslOptions, app);
 }
 
-// Ahora que 'server' y 'app' existen, conectamos el WebSocket
-const wss = new WebSocket.Server({ server });
-
-app.use(express.static(path.join(__dirname, "public")));
-
-app.get("/master", (req, res) => res.sendFile(path.join(__dirname, "public", "master.html")));
-app.get("/display", (req, res) => res.sendFile(path.join(__dirname, "public", "display.html")));
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "player.html")));
 
 // ============================================================
 //   ESTADO GLOBAL
 // ============================================================
-const game = {
-  sessionCode: SAVED_SESSION_CODE || generateSessionCode(),
-  players: [],
-  round: null,
-  config: lock.createSessionConfig(BASE_CONFIG),
-  carryOver: 0,
-  log: [],
-  demoMode: false,
-  waitingRoom: { countdownTimer: null, countdownEndsAt: null, countdownTick: null },
-  awaitingPayout: {
-    active: false, claimType: null, winners: [], paidIds: new Set(),
-    countdownTimer: null, countdownEndsAt: null
-  },
-  autoDraw: {
-    enabled: false, timer: null, delay: BASE_CONFIG.options.autoDrawDelay || 3,
-    pausedForModal: false, wasActiveBeforeClaim: false, wasActiveBeforeManualPause: false
-  },
-  modalOpen: { count: 0, timer: null, lastPlayerName: null }
-};
+let game = null;
 
 function generateSessionCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -174,7 +163,9 @@ function broadcastToMasters(msg) {
 function saveLastConfig() {
   if (!ALL_CONFIG) return;
   ALL_CONFIG.lastConfig = JSON.parse(JSON.stringify(game.config.config));
-  lock.saveConfig(ALL_CONFIG);
+  lock.saveConfig(ALL_CONFIG).catch(err =>
+    console.error("⚠️ Error guardando config:", err.message)
+  );
 }
 
 function pushMasterState() {
@@ -288,8 +279,7 @@ function isCupoFull() {
 }
 
 function startWaitingRoomCountdown() {
-  const hasCupo = getMaxPlayers() > 0;
-  if (!isUnattendedMode() && !hasCupo) return;
+  if (!isUnattendedMode()) return;
   if (game.round && game.round.status !== "ended") return;
   if (game.waitingRoom.countdownTimer) return;
   if (!isAllReady() && !isCupoFull()) return;
@@ -526,41 +516,11 @@ function setAutoDrawDelay(seconds) {
   pushMasterState();
 }
 
+
 // ============================================================
 //   WEBSOCKET
 // ============================================================
-wss.on("connection", (ws, req) => {
-  const ip = req.socket.remoteAddress;
-  ws.clientIp = ip;
-  ws.role = "unknown";
 
-  ws.on("message", (raw) => {
-    let msg;
-    try { msg = JSON.parse(raw); } catch { return; }
-    handleMessage(ws, msg, ip);
-  });
-
-  ws.on("close", () => {
-    if (ws.role === "player") {
-      const p = game.players.find(pl => pl.ws === ws);
-      if (p) {
-        broadcastToMasters({ type: "master_player_disconnected", playerId: p.id, playerName: p.name });
-        if (game.round && game.round.awaitingReady && game.round.readyPlayers) {
-          game.round.readyPlayers.add(p.id);
-          checkAllReady();
-        }
-        removeWinnerFromAwaitingPayout(p.id);
-        pushMasterState();
-        if (isUnattendedMode()) {
-          pushWaitingRoomState();
-          if (isAllReady() || isCupoFull()) startWaitingRoomCountdown();
-        }
-      }
-    } else if (ws.role === "master" || ws.role === "display") {
-      game.players = game.players.filter(pl => pl.ws !== ws);
-    }
-  });
-});
 
 // ============================================================
 //   MENSAJES
@@ -755,7 +715,7 @@ function handleMessage(ws, msg, ip) {
 
       player.paid = true;
       player.status = "approved";
-      player.readyForNextRound = true;
+      player.readyForNextRound = false;
 
       send(ws, {
         type: "you_approved", barName: BAR_NAME,
@@ -764,12 +724,12 @@ function handleMessage(ws, msg, ip) {
       });
       send(ws, { type: "sounds_config_changed", sounds: game.config.config.options.sounds || null });
 
-      const approvedNow = getApprovedPlayers().length;
+      const { ready: readyNow, total: approvedNow } = getReadyCount();
       const max = getMaxPlayers();
       send(ws, {
         type: "waiting_room_state",
         unattendedMode: game.config.config.options.unattendedMode,
-        ready: approvedNow, total: approvedNow, maxPlayers: max,
+        ready: readyNow, total: approvedNow, maxPlayers: max,
         slotsLeft: Math.max(0, max - approvedNow),
         cupoFull: approvedNow >= max,
         countdownActive: !!game.waitingRoom.countdownEndsAt,
@@ -786,7 +746,7 @@ function handleMessage(ws, msg, ip) {
       pushMasterState();
       pushWaitingRoomState();
 
-      if (isCupoFull()) {
+      if (isAllReady() || isCupoFull()) {
         startWaitingRoomCountdown();
       }
       break;
@@ -1985,14 +1945,80 @@ app.post("/close-room", express.json(), (req, res) => {
   res.json({ ok: true, sessionCode: game.sessionCode });
 });
 
-server.listen(PORT, "0.0.0.0", () => {
-  console.log("");
-  console.log("╔════════════════════════════════════════════╗");
-  console.log("║       🎱  ALDEA BELLA BINGO  🎱            ║");
-  console.log("╠════════════════════════════════════════════╣");
-  console.log(`║  🔐  ${IS_PROD ? "HTTP (proxy TLS)" : "HTTPS"}: ${PORT}`);
-  console.log(`║  👑  Master:  /master                      ║`);
-  console.log(`║  📺  Display: /display                     ║`);
-  console.log(`║  📱  Player:  /                            ║`);
-  console.log("╚════════════════════════════════════════════╝");
+// ============================================================
+//   ARRANQUE FINAL
+// ============================================================
+initConfig().then(() => {
+  // 1. Creamos el estado del juego
+  game = {
+    sessionCode: SAVED_SESSION_CODE || generateSessionCode(),
+    players: [],
+    round: null,
+    config: lock.createSessionConfig(BASE_CONFIG),
+    carryOver: 0,
+    log: [],
+    demoMode: false,
+    waitingRoom: { countdownTimer: null, countdownEndsAt: null, countdownTick: null },
+    awaitingPayout: {
+      active: false, claimType: null, winners: [], paidIds: new Set(),
+      countdownTimer: null, countdownEndsAt: null
+    },
+    autoDraw: {
+      enabled: false, timer: null, delay: BASE_CONFIG.options.autoDrawDelay || 3,
+      pausedForModal: false, wasActiveBeforeClaim: false, wasActiveBeforeManualPause: false
+    },
+    modalOpen: { count: 0, timer: null, lastPlayerName: null }
+  };
+
+  // 2. WebSocket (las rutas de Express ya están arriba)
+  const wss = new WebSocket.Server({ server });
+
+  wss.on("connection", (ws, req) => {
+    const ip = req.socket.remoteAddress;
+    ws.clientIp = ip;
+    ws.role = "unknown";
+
+    ws.on("message", (raw) => {
+      let msg;
+      try { msg = JSON.parse(raw); } catch { return; }
+      handleMessage(ws, msg, ip);
+    });
+
+    ws.on("close", () => {
+      if (ws.role === "player") {
+        const p = game.players.find(pl => pl.ws === ws);
+        if (p) {
+          broadcastToMasters({ type: "master_player_disconnected", playerId: p.id, playerName: p.name });
+          if (game.round && game.round.awaitingReady && game.round.readyPlayers) {
+            game.round.readyPlayers.add(p.id);
+            checkAllReady();
+          }
+          removeWinnerFromAwaitingPayout(p.id);
+          pushMasterState();
+          if (isUnattendedMode()) {
+            pushWaitingRoomState();
+            if (isAllReady() || isCupoFull()) startWaitingRoomCountdown();
+          }
+        }
+      } else if (ws.role === "master" || ws.role === "display") {
+        game.players = game.players.filter(pl => pl.ws !== ws);
+      }
+    });
+  });
+
+  // 3. Arrancamos el servidor
+  server.listen(PORT, "0.0.0.0", () => {
+    console.log("");
+    console.log("╔════════════════════════════════════════════╗");
+    console.log("║       🎱  ALDEA BELLA BINGO  🎱            ║");
+    console.log("╠════════════════════════════════════════════╣");
+    console.log(`║  🔐  ${IS_PROD ? "HTTP (proxy TLS)" : "HTTPS"}: ${PORT}`);
+    console.log(`║  👑  Master:  /master                      ║`);
+    console.log(`║  📺  Display: /display                     ║`);
+    console.log(`║  📱  Player:  /                            ║`);
+    console.log("╚════════════════════════════════════════════╝");
+  });
+}).catch(err => {
+  console.error("❌ Error crítico arrancando el servidor:", err);
+  process.exit(1);
 });
