@@ -539,26 +539,54 @@ wss.on("connection", (ws, req) => {
     handleMessage(ws, msg, ip);
   });
 
-  ws.on("close", () => {
-    if (ws.role === "player") {
-      const p = game.players.find(pl => pl.ws === ws);
-      if (p) {
-        broadcastToMasters({ type: "master_player_disconnected", playerId: p.id, playerName: p.name });
-        if (game.round && game.round.awaitingReady && game.round.readyPlayers) {
-          game.round.readyPlayers.add(p.id);
-          checkAllReady();
-        }
-        removeWinnerFromAwaitingPayout(p.id);
-        pushMasterState();
-        if (isUnattendedMode()) {
-          pushWaitingRoomState();
-          if (isAllReady() || isCupoFull()) startWaitingRoomCountdown();
-        }
-      }
-    } else if (ws.role === "master" || ws.role === "display") {
-      game.players = game.players.filter(pl => pl.ws !== ws);
+ws.on("close", () => {
+  if (ws.role === "player") {
+    const p = game.players.find(pl => pl.ws === ws);
+    if (!p) return;
+
+    p.ws = null;
+    p.disconnectedAt = Date.now();
+    // Conservamos status actual pero lo marcamos como desconectado
+    p.statusBeforeDisconnect = p.status;
+    p.status = "disconnected";
+
+    broadcastToMasters({ type: "master_player_disconnected", playerId: p.id, playerName: p.name });
+
+    // Damos por listo al que se fue (para no bloquear el ready-check)
+    if (game.round && game.round.awaitingReady && game.round.readyPlayers) {
+      game.round.readyPlayers.add(p.id);
+      checkAllReady();
     }
-  });
+
+    removeWinnerFromAwaitingPayout(p.id);
+
+    // Marcar como "ready" también en sala de espera
+    p.readyForNextRound = true;
+
+    pushMasterState();
+    pushPublicState();
+
+    if (isUnattendedMode()) {
+      pushWaitingRoomState();
+      if (isAllReady() || isCupoFull()) startWaitingRoomCountdown();
+    }
+
+    // Reaper: si sigue desconectado tras 60s, eliminar definitivamente
+    setTimeout(() => {
+      const still = game.players.find(pl => pl.id === p.id);
+      if (!still) return;
+      if (still.status !== "disconnected") return;
+      // Solo borrar si SIGUE desconectado desde hace >=60s
+      if (!still.disconnectedAt || Date.now() - still.disconnectedAt < 60_000) return;
+      game.players = game.players.filter(pl => pl.id !== p.id);
+      pushMasterState();
+      pushPublicState();
+      pushWaitingRoomState();
+    }, 60_000);
+  } else if (ws.role === "master" || ws.role === "display") {
+    game.players = game.players.filter(pl => pl.ws !== ws);
+  }
+});
 });
 
 // ============================================================
@@ -685,16 +713,27 @@ function handleMessage(ws, msg, ip) {
       );
       if (nameTaken) { send(ws, { type: "join_error", message: "Nombre en uso" }); return; }
 
+      // Buscar reconexión: mismo IP+nombre, o mismo nombre si venía de desconectado
       const existingPlayer = game.players.find(p =>
         p.role !== "master" && p.role !== "display" &&
-        p.ip === ip && p.name.toUpperCase() === upperName &&
-        ["pending", "paid", "approved"].includes(p.status)
+        p.name.toUpperCase() === upperName &&
+        (p.ip === ip || p.status === "disconnected") &&
+        ["pending", "paid", "approved", "disconnected"].includes(p.status)
       );
 
       if (existingPlayer) {
+        // ✅ RESTAURAR ESTADO
         existingPlayer.ws = ws;
+        existingPlayer.ip = ip;
+        existingPlayer.disconnectedAt = null;
+        if (existingPlayer.status === "disconnected") {
+          existingPlayer.status = existingPlayer.statusBeforeDisconnect || "approved";
+          existingPlayer.statusBeforeDisconnect = null;
+        }
         ws.role = "player";
         ws.playerId = existingPlayer.id;
+
+        // Re-marcar cartones con las bolas ya cantadas
         if (game.round && game.round.status === "playing" && existingPlayer.cards.length > 0) {
           const calledNumbers = new Set(game.round.calledBalls.map(b => b.number));
           existingPlayer.cards.forEach(card => {
@@ -706,6 +745,7 @@ function handleMessage(ws, msg, ip) {
             }
           });
         }
+
         send(ws, {
           type: "player_reconnected",
           barName: BAR_NAME, name: existingPlayer.name,
@@ -729,7 +769,20 @@ function handleMessage(ws, msg, ip) {
             freeCells: game.round.config?.options?.freeCells || 1
           } : null
         });
+
+        // Avisar al master de que volvió
+        broadcastToMasters({
+          type: "master_player_reconnected",
+          playerId: existingPlayer.id,
+          playerName: existingPlayer.name
+        });
+
         pushMasterState();
+        pushPublicState();
+        pushWaitingRoomState();
+        if (isUnattendedMode()) {
+          if (isAllReady() || isCupoFull()) startWaitingRoomCountdown();
+        }
         return;
       }
 
@@ -790,7 +843,7 @@ function handleMessage(ws, msg, ip) {
       }
       break;
     }
-
+ 
     case "master_mark_paid": {
       if (ws.role !== "master") return;
       const p = game.players.find(pl => pl.id === msg.playerId);
