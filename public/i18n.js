@@ -4,7 +4,7 @@
 const I18N = {
   es: {
     // Login
-    "login.sub": "Noche de Bingo",
+    "login.sub": "Noches de Bingo",
     "login.session_code": "Código de sesión",
     "login.your_name": "Tu nombre",
     "login.change": "✏️ Cambiar",
