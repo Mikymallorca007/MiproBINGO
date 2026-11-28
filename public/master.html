@@ -710,7 +710,7 @@
 <body>
 
 <div class="login-screen" id="loginScreen">
-  <h1>🎱 MiPro Bingo</h1>
+  <h1>🎱 ALDEA BELLA</h1>
   <div class="sub">Master Control Panel</div>
   <input type="password" id="masterPassword" placeholder="Master password" autocomplete="off" />
   <button id="loginBtn">Enter</button>
@@ -720,7 +720,7 @@
 <div class="app" id="app">
   <header>
     <div>
-      <span class="brand" id="masterBarName">🎱 ALDEA BELLA 3</span>
+      <span class="brand" id="masterBarName">🎱 ALDEA BELLA</span>
     </div>
     <div class="session-pill" id="headerSession">------</div>
   </header>
@@ -1356,7 +1356,7 @@ case "master_login_ok":
       if (titleBlinkInterval) clearInterval(titleBlinkInterval);
       let blink = false;
       titleBlinkInterval = setInterval(() => {
-        document.title = blink ? `🚨 ${msg.claim.toUpperCase()} — ${msg.playerName}` : `🎱 Aldea Bella 4`;
+        document.title = blink ? `🚨 ${msg.claim.toUpperCase()} — ${msg.playerName}` : `🎱 Aldea Bella`;
         blink = !blink;
       }, 800);
       const gameTab = document.querySelector('.tab[data-tab="game"]');
