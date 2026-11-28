@@ -1,0 +1,4147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1a2e" />
+<title>🎱 Aldea Bella Bingo</title>
+<script src="i18n.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #1e3a5f 0%, #0f1a2e 60%);
+    color: #e8eef7;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overscroll-behavior: none;
+  }
+  .screen {
+    display: none;
+    padding: clamp(10px, 2vh, 20px) clamp(10px, 3vw, 16px);
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    flex-direction: column;
+  }
+  .screen.active { display: flex; }
+
+/* ============ MASTER LINK ============ */
+  .master-link {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 9998;
+    background: rgba(10, 20, 36, 0.85);
+    color: #f5c542;
+    border: 1px solid #2a4a72;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: all 0.15s;
+  }
+  .master-link:hover {
+    background: linear-gradient(180deg, #f5c542, #e8a020);
+    color: #1a1a1a;
+    border-color: #f5c542;
+  }
+
+
+  /* ============ LOGIN ============ */
+  .login-hero { text-align: center; margin-top: 40px; margin-bottom: 32px; }
+  .login-hero h1 {
+    font-size: 2.2rem; margin: 0 0 6px;
+    background: linear-gradient(90deg, #f5c542, #e8a020);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; letter-spacing: 1px;
+  }
+  .login-hero .sub { color: #90a4c4; font-size: 0.9rem; letter-spacing: 3px; text-transform: uppercase; }
+  .login-hero .dice { font-size: 3rem; margin-bottom: 8px; }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 0.8rem; color: #90a4c4;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; overflow: hidden;
+  }
+  .field label .change-btn {
+    float: right; background: transparent; border: none;
+    color: #64b5f6; font-size: 0.75rem; cursor: pointer;
+    text-decoration: underline; padding: 0; letter-spacing: 0;
+    text-transform: none; font-family: inherit;
+  }
+  .field input {
+    width: 100%; padding: 16px 18px; font-size: 1.1rem;
+    border-radius: 12px; border: 2px solid #2a4a72;
+    background: #16253d; color: #fff;
+    transition: border-color 0.15s; text-transform: uppercase;
+  }
+  .field input:focus { outline: none; border-color: #f5c542; }
+  .field input.code-input {
+    text-align: center; letter-spacing: 6px;
+    text-transform: uppercase; font-family: "Courier New", monospace; font-weight: 700;
+  }
+  .btn {
+    padding: 16px; font-size: 1.05rem; font-weight: 700;
+    border-radius: 12px; border: none; cursor: pointer;
+    transition: filter 0.15s, transform 0.1s; letter-spacing: 0.5px;
+  }
+  .btn:hover { filter: brightness(1.05); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: linear-gradient(180deg, #f5c542, #e8a020);
+    color: #1a1a1a; width: 100%;
+  }
+  .error { color: #ef5350; text-align: center; margin-top: 12px; min-height: 20px; font-size: 0.9rem; }
+
+  /* ============ WAITING ============ */
+  .waiting-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px 16px;
+    gap: 18px;
+  }
+
+  .waiting-icon {
+    font-size: clamp(3.5rem, 12vw, 5rem);
+    line-height: 1;
+    animation: waitingBounce 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(245, 197, 66, 0.4));
+  }
+  @keyframes waitingBounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+
+  .waiting-title {
+    color: #f5c542;
+    font-size: clamp(1.3rem, 4.5vw, 1.7rem);
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin: 0;
+  }
+
+  .waiting-text {
+    color: #90a4c4;
+    font-size: clamp(0.9rem, 2.6vw, 1rem);
+    line-height: 1.5;
+    max-width: 320px;
+    margin: 0;
+  }
+
+  .waiting-card {
+    width: 100%;
+    max-width: 340px;
+    background: linear-gradient(135deg, #16253d, #1e3a5f);
+    border: 2px solid #2a4a72;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .waiting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .waiting-row .wlabel {
+    font-size: 0.75rem;
+    color: #90a4c4;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+  }
+
+  .waiting-row .wvalue {
+    font-size: 1rem;
+    color: #fff;
+    font-weight: 800;
+    font-family: "Courier New", monospace;
+    letter-spacing: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 60%;
+    text-align: right;
+  }
+
+  .waiting-row .wvalue.gold {
+    color: #f5c542;
+    letter-spacing: 3px;
+  }
+
+  .waiting-pulse-dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+  }
+  .waiting-pulse-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f5c542;
+    opacity: 0.4;
+    animation: waitingDot 1.4s ease-in-out infinite;
+  }
+  .waiting-pulse-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .waiting-pulse-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes waitingDot {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.3); }
+  }
+
+  .waiting-cancel {
+    margin-top: 10px;
+    background: transparent;
+    border: 2px solid #2a4a72;
+    color: #90a4c4;
+    padding: 10px 22px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+  .waiting-cancel:hover {
+    border-color: #90a4c4;
+    color: #e8eef7;
+  }
+  .waiting-cancel:active {
+    transform: scale(0.97);
+  }
+
+  /* ============ WAITING ROOM (modo desatendido) ============ */
+  .waiting-room-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px 16px;
+    gap: 16px;
+  }
+  .wr-title {
+    font-size: clamp(1.2rem, 4vw, 1.6rem);
+    font-weight: 900;
+    color: #f5c542;
+    letter-spacing: 2px;
+    margin: 0;
+  }
+  .wr-subtitle {
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    color: #90a4c4;
+    margin: 0 0 8px;
+  }
+  .wr-progress-circle {
+    position: relative;
+    width: clamp(140px, 40vw, 180px);
+    height: clamp(140px, 40vw, 180px);
+    margin: 8px auto;
+  }
+  .wr-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .wr-circle-bg {
+    fill: none;
+    stroke: #1e3555;
+    stroke-width: 8;
+  }
+  .wr-circle-fg {
+    fill: none;
+    stroke: #43a047;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 326.7;
+    stroke-dashoffset: 326.7;
+    transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;
+  }
+  .wr-progress-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .wr-progress-numbers {
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    font-weight: 900;
+    color: #fff;
+    font-family: "Courier New", monospace;
+    line-height: 1;
+  }
+  .wr-progress-label {
+    font-size: clamp(0.7rem, 2vw, 0.85rem);
+    color: #90a4c4;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .wr-countdown {
+    text-align: center;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #3a2a10, #4a3010);
+    border: 2px solid #f5c542;
+    border-radius: 16px;
+    margin: 8px auto;
+    animation: wrCountdownPulse 1s ease-in-out infinite;
+  }
+  @keyframes wrCountdownPulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(245, 197, 66, 0.5); transform: scale(1); }
+    50% { box-shadow: 0 0 30px rgba(245, 197, 66, 0.9); transform: scale(1.02); }
+  }
+  .wr-countdown-label {
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
+    color: #f5c542;
+    font-weight: 800;
+    letter-spacing: 3px;
+    margin-bottom: 4px;
+  }
+  .wr-countdown-number {
+    font-size: clamp(3rem, 12vw, 5rem);
+    font-weight: 900;
+    color: #fff;
+    font-family: "Courier New", monospace;
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(245, 197, 66, 0.7);
+  }
+  .wr-ready-btn {
+    padding: clamp(16px, 3vh, 22px) clamp(24px, 6vw, 40px);
+    font-size: clamp(1.05rem, 3.5vw, 1.35rem);
+    font-weight: 900;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(180deg, #43a047, #2e7d32);
+    color: #fff;
+    letter-spacing: 1px;
+    box-shadow: 0 6px 20px rgba(67, 160, 71, 0.5);
+    margin: 8px 0;
+    transition: filter 0.15s, transform 0.1s;
+    animation: wrReadyPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes wrReadyPulse {
+    0%, 100% { box-shadow: 0 6px 20px rgba(67, 160, 71, 0.5); }
+    50% { box-shadow: 0 6px 30px rgba(67, 160, 71, 0.9), 0 0 40px rgba(67, 160, 71, 0.5); }
+  }
+  .wr-ready-btn:active { transform: scale(0.97); }
+  .wr-ready-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    animation: none;
+    box-shadow: none;
+  }
+  .wr-ready-done {
+    padding: 16px 24px;
+    background: #1a2d4a;
+    border: 2px solid #1976d2;
+    border-radius: 14px;
+    color: #64b5f6;
+    margin: 8px 0;
+    animation: wrReadyDoneIn 0.4s ease-out;
+  }
+  @keyframes wrReadyDoneIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .wr-ready-done-icon {
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+  }
+  .wr-ready-done-text {
+    font-weight: 700;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+  }
+  .wr-players {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    max-width: 380px;
+    margin: 4px auto;
+  }
+  .wr-player-chip {
+    padding: 6px 12px;
+    background: #16253d;
+    border: 1px solid #2a4a72;
+    border-radius: 20px;
+    font-size: clamp(0.7rem, 2vw, 0.82rem);
+    color: #90a4c4;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+  }
+  .wr-player-chip.ready {
+    background: #0e3a1a;
+    border-color: #43a047;
+    color: #a5d6a7;
+  }
+  .wr-player-chip.me {
+    border-color: #f5c542;
+    border-width: 2px;
+  }
+  .wr-player-chip .chip-icon { font-size: 0.9rem; }
+  .wr-leave-btn {
+    background: transparent;
+    border: 2px solid #2a4a72;
+    color: #90a4c4;
+    margin-top: 16px;
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  /* ============ APPROVED ============ */
+  .approved-hero {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 40px 20px;
+  }
+  .approved-hero .check { font-size: 5rem; margin-bottom: 16px; animation: popIn 0.5s ease-out; }
+  @keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .approved-hero h2 { font-size: 1.8rem; color: #66bb6a; margin: 0 0 10px; }
+  .approved-hero p { color: #90a4c4; font-size: 1rem; }
+
+  /* ============ GAME ============ */
+  .game-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: clamp(4px, 1vh, 8px) 4px clamp(6px, 1.2vh, 12px);
+    border-bottom: 1px solid #1e3555;
+    margin-bottom: clamp(6px, 1.5vh, 12px);
+    flex-shrink: 0;
+  }
+  .game-header .bar-name {
+    font-weight: 800;
+    background: linear-gradient(90deg, #f5c542, #e8a020);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+  }
+  .game-header .player-name { color: #90a4c4; font-size: clamp(0.7rem, 2.2vw, 0.85rem); }
+  .player-name-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .player-name-row .player-name {
+    color: #90a4c4;
+    font-size: clamp(0.7rem, 2.2vw, 0.85rem);
+  }
+  .game-stat {
+    font-size: clamp(0.7rem, 2.2vw, 0.85rem);
+    color: #90a4c4;
+    font-family: "Courier New", monospace;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .game-stat b {
+    color: #f5c542;
+    font-weight: 800;
+  }
+  .game-stat.paused {
+    opacity: 0.55;
+  }
+  .game-stat.paused::after {
+    content: " ⏸";
+    font-size: 0.75em;
+  }
+  .game-header .round-tag {
+    padding: 4px 10px; border-radius: 20px;
+    font-size: clamp(0.65rem, 2vw, 0.75rem); font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .round-tag.real { background: #1e4620; color: #66bb6a; border: 1px solid #2e7d32; }
+  .round-tag.practice { background: #3a2a10; color: #ffab40; border: 1px solid #8b5a1a; }
+
+  /* ============ POOL ============ */
+  .pool-info {
+    background: #0e2018; border: 1px solid #2e7d32;
+    border-radius: 10px; padding: clamp(6px, 1.2vh, 10px) clamp(8px, 2vw, 14px);
+    margin-bottom: clamp(6px, 1.5vh, 12px);
+    font-size: clamp(0.72rem, 2vw, 0.85rem);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .pool-info .line { color: #ff8f00; font-weight: 700; }
+  .pool-info .bingo { color: #e53935; font-weight: 700; }
+
+  .pool-info .prize-item {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  .pool-info .prize-item strong { font-family: "Courier New", monospace; }
+  .pool-info .prize-item .icon { font-size: 0.95rem; display: inline-block; }
+
+  .pool-info .prize-item.won-by-me {
+    background: linear-gradient(180deg, #f5c542, #e8a020);
+    color: #1a1a1a;
+    padding: 5px 12px;
+    box-shadow: 0 0 12px rgba(245, 197, 66, 0.6);
+    animation: winnerPulse 1.5s ease-in-out infinite;
+  }
+  .pool-info .prize-item.won-by-me .icon { animation: crownPop 0.5s ease-out; }
+  .pool-info .prize-item.won-by-me strong { color: #1a1a1a; }
+  .pool-info .prize-item.won-by-me .line,
+  .pool-info .prize-item.won-by-me .bingo { color: #1a1a1a; }
+  @keyframes winnerPulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(245, 197, 66, 0.6); }
+    50% { box-shadow: 0 0 20px rgba(245, 197, 66, 1), 0 0 30px rgba(245, 197, 66, 0.6); }
+  }
+  @keyframes crownPop {
+    0% { transform: scale(0) rotate(-180deg); }
+    70% { transform: scale(1.3) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  /* ============ BALLS ROW (bolas circulares) ============ */
+  .balls-row {
+    display: flex;
+    gap: clamp(6px, 1.5vw, 10px);
+    margin-bottom: clamp(6px, 1.5vh, 12px);
+    flex-shrink: 0;
+    align-items: center;
+  }
+
+  .ball-current {
+    width: clamp(70px, 20vw, 90px);
+    height: clamp(70px, 20vw, 90px);
+    border-radius: 50%;
+    background: linear-gradient(135deg, #455a64, #263238);
+    border: 3px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.3), inset 0 3px 8px rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+    position: relative;
+    transition: background 0.2s;
+  }
+
+  .ball-current.letter-b { background: linear-gradient(135deg, #1976d2, #0d47a1); }
+  .ball-current.letter-i { background: linear-gradient(135deg, #2e7d32, #1b5e20); }
+  .ball-current.letter-n { background: linear-gradient(135deg, #ef6c00, #e65100); }
+  .ball-current.letter-g { background: linear-gradient(135deg, #7b1fa2, #4a148c); }
+  .ball-current.letter-o { background: linear-gradient(135deg, #c62828, #b71c1c); }
+
+  .ball-current .letter {
+    font-size: clamp(0.6rem, 2vw, 0.8rem);
+    font-weight: 900;
+    letter-spacing: 1px;
+    opacity: 0.85;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .ball-current .number {
+    font-size: clamp(1.6rem, 5.5vw, 2.2rem);
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  .ball-current .number.none {
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    color: #90a4c4;
+    font-style: italic;
+    text-shadow: none;
+  }
+  .ball-current .number.pop {
+    animation: numberPop 0.5s ease-out;
+  }
+  @keyframes numberPop {
+    0% { transform: scale(0.75); opacity: 0.5; }
+    55% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .ball-prev {
+    display: flex;
+    gap: clamp(4px, 1vw, 8px);
+    align-items: center;
+    flex: 1;
+    justify-content: flex-start;
+    overflow: hidden;
+    margin-left: clamp(10px, 3vw, 18px);
+  }
+  .ball-prev-item {
+    width: clamp(38px, 11vw, 48px);
+    height: clamp(38px, 11vw, 48px);
+    border-radius: 50%;
+    background: linear-gradient(135deg, #455a64, #263238);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4), inset 0 -2px 5px rgba(0, 0, 0, 0.3), inset 0 2px 5px rgba(255, 255, 255, 0.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .ball-prev-item.letter-b { background: linear-gradient(135deg, #1976d2, #0d47a1); }
+  .ball-prev-item.letter-i { background: linear-gradient(135deg, #2e7d32, #1b5e20); }
+  .ball-prev-item.letter-n { background: linear-gradient(135deg, #ef6c00, #e65100); }
+  .ball-prev-item.letter-g { background: linear-gradient(135deg, #7b1fa2, #4a148c); }
+  .ball-prev-item.letter-o { background: linear-gradient(135deg, #c62828, #b71c1c); }
+
+  .ball-prev-item .letter {
+    font-size: clamp(0.45rem, 1.4vw, 0.6rem);
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+    line-height: 1;
+    margin-bottom: 1px;
+  }
+  .ball-prev-item .number {
+    font-size: clamp(0.85rem, 2.8vw, 1.1rem);
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  .ball-prev-item.empty {
+    background: transparent;
+    border-style: dashed;
+    border-color: #1e3555;
+    box-shadow: none;
+    opacity: 0.35 !important;
+  }
+  .ball-prev-item.empty .letter,
+  .ball-prev-item.empty .number {
+    color: #3a4a5a;
+  }
+
+  /* ============ PANTALLA READY-WAIT ============ */
+  .ready-wait-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: clamp(10px, 2vh, 20px) clamp(10px, 3vw, 16px);
+    max-width: 480px;
+    margin: 0 auto;
+    gap: 16px;
+    width: 100%;
+  }
+
+  @media (min-width: 720px) {
+    .ready-wait-screen {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      max-width: 900px;
+      gap: 24px;
+    }
+    .ready-wait-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 14px 20px;
+    }
+    .ready-wait-card {
+      flex: 1;
+      max-width: 440px;
+    }
+    .ready-wait-overlay {
+      flex: 0 0 auto;
+      padding: 0;
+    }
+  }
+
+  .ready-wait-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: clamp(4px, 1vh, 8px) 4px clamp(6px, 1.2vh, 12px);
+    border-bottom: 1px solid #1e3555;
+    margin-bottom: clamp(6px, 1.5vh, 12px);
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .ready-wait-header .bar-name {
+    font-weight: 800;
+    background: linear-gradient(90deg, #f5c542, #e8a020);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+  }
+
+  .ready-wait-card {
+    background: #0a1424;
+    border-radius: clamp(12px, 2vw, 16px);
+    padding: clamp(6px, 1.2vw, 12px);
+    border: 2px solid #2a4a72;
+    position: relative;
+    max-width: 440px;
+    width: 100%;
+    margin: 0 auto;
+    min-height: 440px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ready-wait-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 0;
+    pointer-events: none;
+  }
+
+  .ready-wait-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 18px 22px;
+    background: rgba(10, 20, 36, 0.96);
+    border: 2px solid #f5c542;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 30px rgba(245, 197, 66, 0.3);
+    max-width: 260px;
+  }
+
+  .ready-wait-icon {
+    font-size: clamp(2rem, 6vw, 2.8rem);
+    margin-bottom: 10px;
+    animation: waitingBounce 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 15px rgba(245, 197, 66, 0.5));
+  }
+  .ready-wait-title {
+    color: #f5c542;
+    font-size: clamp(1rem, 3.2vw, 1.2rem);
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    margin: 0 0 8px;
+    line-height: 1.2;
+  }
+
+  .ready-wait-subtitle {
+    color: #e8eef7;
+    font-size: clamp(0.8rem, 2.4vw, 0.9rem);
+    line-height: 1.35;
+    max-width: 220px;
+    margin: 0;
+  }
+
+  .ready-wait-dots {
+    display: inline-flex;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .ready-wait-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f5c542;
+    opacity: 0.4;
+    animation: waitingDot 1.4s ease-in-out infinite;
+  }
+  .ready-wait-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .ready-wait-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  /* ============ CARTÓN ============ */
+  .card-wrap {
+    background: #0a1424;
+    border-radius: clamp(12px, 2vw, 16px);
+    padding: clamp(6px, 1.2vw, 12px);
+    border: 2px solid #2a4a72;
+    margin-bottom: clamp(6px, 1.5vh, 12px);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .card-wrap.practice { border-color: #8b5a1a; background: #1a1208; }
+  .card-wrap .practice-badge {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(180deg, #ffab40, #ef6c00);
+    color: #1a1a1a; padding: 3px 12px; border-radius: 10px;
+    font-size: clamp(0.6rem, 1.8vw, 0.7rem); font-weight: 800;
+    letter-spacing: 1px; text-transform: uppercase; z-index: 2;
+  }
+
+  .bingo-card {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: clamp(3px, 0.8vw, 5px);
+  }
+  .card-header {
+    text-align: center;
+    font-size: clamp(1rem, 3.5vw, 1.4rem);
+    font-weight: 900;
+    padding: clamp(2px, 0.5vh, 6px) 0;
+    letter-spacing: 2px;
+  }
+  .card-header.b { color: #64b5f6; }
+  .card-header.i { color: #81c784; }
+  .card-header.n { color: #ffb74d; }
+  .card-header.g { color: #ba68c8; }
+  .card-header.o { color: #ef5350; }
+
+  .card-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #16253d;
+    border-radius: clamp(5px, 1vw, 8px);
+    font-size: clamp(0.85rem, 3vw, 1.15rem);
+    font-weight: 700;
+    color: #e8eef7;
+    border: 2px solid #1e3555;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    position: relative;
+  }
+  .card-cell.free {
+    background: linear-gradient(135deg, #f5c542, #e8a020);
+    color: #1a1a1a;
+    font-size: clamp(0.6rem, 2vw, 0.85rem);
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    cursor: default;
+  }
+  .card-cell.marked {
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+    border-color: #66bb6a;
+    color: #fff;
+    box-shadow: inset 0 0 12px rgba(102, 187, 106, 0.3);
+  }
+  .card-cell.marked::after {
+    content: "✓";
+    position: absolute;
+    top: 2px; right: 3px;
+    font-size: clamp(0.5rem, 1.6vw, 0.7rem);
+    color: #a5d6a7;
+  }
+  .card-cell.pulse { animation: cellPulse 1s ease-out; }
+  @keyframes cellFlashWrong {
+    0%   { background: #16253d; border-color: #1e3555; transform: scale(1); box-shadow: none; }
+    25%  { background: #c62828; border-color: #ef5350; transform: scale(1.08); box-shadow: 0 0 20px rgba(239, 83, 80, 0.8); color: #fff; }
+    100% { background: #16253d; border-color: #1e3555; transform: scale(1); box-shadow: none; }
+  }
+  .card-cell.flash-wrong {
+    animation: cellFlashWrong 0.45s ease-out;
+  }
+  @keyframes cellPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); box-shadow: 0 0 20px rgba(245, 197, 66, 0.6); }
+    100% { transform: scale(1); }
+  }
+
+  .card-cell.winning-line {
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+    border-color: #66bb6a;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(102, 187, 106, 0.7), inset 0 0 8px rgba(102, 187, 106, 0.4);
+    animation: winningPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes winningPulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(102, 187, 106, 0.7), inset 0 0 8px rgba(102, 187, 106, 0.4); }
+    50%      { box-shadow: 0 0 24px rgba(102, 187, 106, 1), inset 0 0 14px rgba(102, 187, 106, 0.7); }
+  }
+
+  .card-cell.winning-bingo {
+    background: linear-gradient(135deg, #f5c542, #e8a020);
+    border-color: #fff;
+    color: #1a1a1a;
+    box-shadow: 0 0 14px rgba(245, 197, 66, 0.9), inset 0 0 10px rgba(255, 255, 255, 0.4);
+    animation: winningPulseGold 1.5s ease-in-out infinite;
+  }
+  @keyframes winningPulseGold {
+    0%, 100% { box-shadow: 0 0 14px rgba(245, 197, 66, 0.9), inset 0 0 10px rgba(255, 255, 255, 0.4); }
+    50%      { box-shadow: 0 0 30px rgba(245, 197, 66, 1), inset 0 0 18px rgba(255, 255, 255, 0.7); }
+  }
+
+  .claim-ready-banner {
+    margin: 8px auto;
+    max-width: 440px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 800;
+    font-size: clamp(0.9rem, 3vw, 1.05rem);
+    letter-spacing: 0.5px;
+    animation: claimReadyPulse 1.2s ease-in-out infinite;
+    display: none;
+  }
+  .claim-ready-banner.active { display: block; }
+  .claim-ready-banner.line {
+    background: linear-gradient(135deg, #0e3a1a, #1e4620);
+    border: 2px solid #66bb6a;
+    color: #a5d6a7;
+    box-shadow: 0 0 20px rgba(102, 187, 106, 0.5);
+  }
+  .claim-ready-banner.bingo {
+    background: linear-gradient(135deg, #3a2a10, #4a3010);
+    border: 2px solid #f5c542;
+    color: #f5c542;
+    box-shadow: 0 0 20px rgba(245, 197, 66, 0.6);
+  }
+  @keyframes claimReadyPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.03); }
+  }
+
+  /* ============ BOTONES LINE/BINGO ============ */
+  .actions {
+    display: none;
+  }
+  .actions button {
+    padding: clamp(12px, 2vh, 18px) clamp(10px, 2vw, 14px);
+    font-size: clamp(0.9rem, 2.8vw, 1.15rem);
+    font-weight: 800;
+    border-radius: clamp(10px, 2vw, 14px);
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: filter 0.15s, transform 0.1s;
+  }
+  .actions button:active { transform: scale(0.97); }
+  .actions button:disabled {
+    opacity: 0.35; cursor: not-allowed;
+    filter: grayscale(0.7);
+    animation: none !important; box-shadow: none !important;
+  }
+  .btn-line-full {
+    background: linear-gradient(180deg, #ff8f00, #e65100);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(230, 81, 0, 0.4);
+  }
+  .btn-bingo-full {
+    background: linear-gradient(180deg, #e53935, #b71c1c);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(183, 28, 28, 0.4);
+  }
+  .btn-line-full.btn-ready { animation: glowPulse 1.5s ease-in-out infinite; }
+  @keyframes glowPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(230, 81, 0, 0.4); }
+    50% { transform: scale(1.03); box-shadow: 0 4px 25px rgba(230, 81, 0, 0.9), 0 0 30px rgba(255, 143, 0, 0.6); }
+  }
+  .btn-bingo-full.btn-ready { animation: glowPulseBingo 1.5s ease-in-out infinite; }
+  @keyframes glowPulseBingo {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(183, 28, 28, 0.4); }
+    50% { transform: scale(1.03); box-shadow: 0 4px 25px rgba(229, 57, 53, 0.9), 0 0 30px rgba(229, 57, 53, 0.6); }
+  }
+
+  .help-text {
+    text-align: center;
+    font-size: clamp(0.65rem, 2vw, 0.8rem);
+    color: #7a90b4;
+    line-height: 1.4;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .wake-lock-indicator {
+    display: none;
+    text-align: center;
+    font-size: clamp(0.6rem, 1.8vw, 0.75rem);
+    color: #90a4c4;
+    margin-top: clamp(4px, 1vh, 12px);
+    padding: 5px 12px;
+    background: #0a1424;
+    border: 1px solid #1e3555;
+    border-radius: 20px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    flex-shrink: 0;
+  }
+  .wake-lock-indicator.active { display: block; }
+  .wake-lock-indicator .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f5c542;
+    margin-right: 6px;
+    animation: wakeDot 2s ease-in-out infinite;
+    vertical-align: middle;
+  }
+  @keyframes wakeDot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(245, 197, 66, 0.8); }
+    50% { opacity: 0.5; box-shadow: 0 0 12px rgba(245, 197, 66, 1); }
+  }
+
+  /* ============ OVERLAYS ============ */
+  .pause-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10, 20, 36, 0.94);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 9997; padding: 24px; text-align: center;
+    animation: overlayIn 0.25s ease-out;
+  }
+  .pause-overlay.active { display: flex; }
+  @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+  .pause-content { max-width: 380px; }
+  .pause-icon {
+    font-size: 4rem; margin-bottom: 16px; display: block;
+    animation: pulsePause 1.8s ease-in-out infinite;
+  }
+  @keyframes pulsePause {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.85; }
+  }
+  .pause-title {
+    font-size: 1.6rem; font-weight: 900; color: #f5c542;
+    margin: 0 0 12px; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .pause-message { font-size: 1rem; color: #e8eef7; line-height: 1.5; margin: 0 0 24px; }
+  .pause-hint { font-size: 0.85rem; color: #90a4c4; margin-top: 20px; }
+  .pause-dots::after { content: ""; animation: dots 1.5s steps(4, end) infinite; }
+  @keyframes dots {
+    0%, 20% { content: ""; }
+    40% { content: "."; }
+    60% { content: ".."; }
+    80%, 100% { content: "..."; }
+  }
+
+  .claim-window-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10, 20, 36, 0.94);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 9996; padding: 24px; text-align: center;
+    animation: overlayIn 0.25s ease-out;
+  }
+  .claim-window-overlay.active { display: flex; }
+  .claim-window-content { max-width: 420px; width: 100%; }
+  .claim-window-icon { font-size: 4rem; margin-bottom: 16px; display: block; }
+  .claim-window-title {
+    font-size: 1.5rem; font-weight: 900; color: #66bb6a;
+    margin: 0 0 12px; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .claim-window-counter {
+    font-size: 3.5rem; font-weight: 900; color: #fff;
+    font-family: "Courier New", monospace;
+    margin: 20px 0;
+    text-shadow: 0 0 30px rgba(102, 187, 106, 0.6);
+  }
+  .claim-window-message {
+    font-size: 1.05rem; color: #e8eef7;
+    line-height: 1.5; margin: 0 0 20px;
+  }
+  .claim-window-message strong { color: #f5c542; }
+  .claim-window-btn {
+    padding: 18px 24px; font-size: 1.1rem; font-weight: 800;
+    border-radius: 14px; border: none; cursor: pointer;
+    background: linear-gradient(180deg, #ff8f00, #e65100);
+    color: #fff; width: 100%; max-width: 340px;
+    box-shadow: 0 6px 20px rgba(230, 81, 0, 0.5);
+    letter-spacing: 0.5px;
+    animation: glowPulse 1.5s ease-in-out infinite;
+  }
+  .claim-window-btn:disabled {
+    opacity: 0.4; cursor: not-allowed;
+    animation: none !important; box-shadow: none !important;
+  }
+  .claim-window-status {
+    padding: 18px 24px;
+    border-radius: 14px;
+    background: #0e2018;
+    border: 2px solid #2e7d32;
+    color: #66bb6a;
+    font-size: 1.05rem;
+    font-weight: 700;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+  .claim-window-status.already {
+    background: #1a2d4a;
+    border-color: #1976d2;
+    color: #64b5f6;
+  }
+  .claim-window-status.waiting {
+    background: #16253d;
+    border-color: #2a4a72;
+    color: #90a4c4;
+  }
+
+  .confirm-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 9998; padding: 20px;
+    animation: overlayIn 0.2s ease-out;
+  }
+  .confirm-overlay.active { display: flex; }
+  .confirm-box {
+    background: linear-gradient(135deg, #16253d, #1e3a5f);
+    border: 2px solid #2a4a72; border-radius: 20px;
+    padding: 28px 24px 20px; max-width: 360px; width: 100%;
+    text-align: center; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    animation: boxIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes boxIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .confirm-box .confirm-icon { font-size: 3rem; margin-bottom: 12px; display: block; }
+  .confirm-box .confirm-title {
+    font-size: 1.3rem; font-weight: 800;
+    margin: 0 0 8px; color: #f5c542; letter-spacing: 0.5px;
+  }
+  .confirm-box .confirm-message {
+    font-size: 0.95rem; color: #90a4c4; margin: 0 0 22px; line-height: 1.4;
+  }
+  .confirm-box .confirm-buttons {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .confirm-box button {
+    padding: 14px 12px; font-size: 0.95rem; font-weight: 800;
+    border-radius: 12px; border: none; cursor: pointer;
+    letter-spacing: 0.5px; transition: filter 0.15s, transform 0.1s;
+  }
+  .confirm-box button:active { transform: scale(0.97); }
+  .confirm-box .confirm-yes {
+    background: linear-gradient(180deg, #f5c542, #e8a020); color: #1a1a1a;
+  }
+  .confirm-box .confirm-no {
+    background: transparent; border: 2px solid #2a4a72; color: #90a4c4;
+  }
+
+  /* ============ RECONNECT BANNER ============ */
+  #reconnectBanner.active {
+    display: block !important;
+    animation: reconnectPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes reconnectPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* ============ TOASTS ============ */
+  .toasts {
+    position: fixed; top: 16px; left: 16px; right: 16px;
+    z-index: 9999; display: flex; flex-direction: column;
+    gap: 8px; pointer-events: none;
+  }
+  .toast {
+    background: #16253d; border-left: 4px solid #f5c542;
+    padding: 12px 16px; border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    animation: toastIn 0.3s ease-out; font-size: 0.9rem;
+    pointer-events: auto;
+  }
+  .toast.success { border-left-color: #66bb6a; background: #0e2018; }
+  .toast.error   { border-left-color: #ef5350; background: #2a1010; }
+  .toast.warn    { border-left-color: #ffab40; background: #2a1e0e; }
+  .toast.info    { border-left-color: #64b5f6; }
+  @keyframes toastIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* ============ ROUND END / KICKED ============ */
+  .round-end { text-align: center; padding: 40px 20px; }
+  .round-end h2 { font-size: 1.6rem; color: #f5c542; margin: 0 0 12px; }
+  .round-end .winner { font-size: 1.2rem; color: #66bb6a; margin-bottom: 20px; }
+
+  .kicked-box {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 40px 20px;
+  }
+  .kicked-box .icon { font-size: 5rem; margin-bottom: 16px; }
+  .kicked-box h2 { color: #ef5350; font-size: 1.6rem; margin: 0 0 10px; }
+  .kicked-box p { color: #90a4c4; line-height: 1.5; margin-bottom: 24px; }
+  .btn-back-to-login {
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-weight: 800;
+    border-radius: 12px;
+    border: 2px solid #f5c542;
+    background: linear-gradient(180deg, #f5c542, #e8a020);
+    color: #1a1a1a;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 16px rgba(245, 197, 66, 0.3);
+    transition: transform 0.1s, filter 0.15s;
+  }
+  .btn-back-to-login:hover { filter: brightness(1.1); }
+  .btn-back-to-login:active { transform: scale(0.97); }
+
+  .hidden { display: none !important; }
+
+  /* ============ MEDIA QUERIES ============ */
+  @media (max-height: 640px) {
+    .screen { padding: 6px 10px; }
+    .game-header { margin-bottom: 4px; padding-bottom: 4px; }
+    .pool-info { margin-bottom: 4px; padding: 4px 8px; }
+    .balls-row { margin-bottom: 4px; }
+    .card-wrap { margin-bottom: 4px; }
+    .actions button { padding: 10px 8px; font-size: 0.85rem; }
+    .help-text { display: none; }
+  }
+
+  @media (max-height: 480px) {
+    .game-header { display: none; }
+    .pool-info { display: none; }
+    .help-text { display: none; }
+  }
+
+  @media (min-height: 900px) {
+    .card-wrap { max-width: 440px; margin-left: auto; margin-right: auto; }
+    .actions { max-width: 440px; margin-left: auto; margin-right: auto; }
+  }
+
+  .card-wrap.locked {
+    opacity: 0.75;
+    filter: grayscale(0.3);
+    pointer-events: none;
+    position: relative;
+  }
+  .card-wrap.locked::after {
+    content: "🔒 FIN DE PARTIDA";
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-8deg);
+    background: rgba(198, 40, 40, 0.92);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .card-wrap.locked ~ .actions,
+  .card-wrap.locked ~ .help-text {
+    display: none !important;
+  }
+  #lockedActions {
+    display: none;
+    margin-top: 16px;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #lockedActions .locked-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  #lockedActions button {
+    padding: 16px 12px;
+    font-size: 1rem;
+    font-weight: 800;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  #btnPlayAgainFromCard {
+    background: linear-gradient(180deg, #43a047, #2e7d32);
+    color: #fff;
+  }
+  #btnLeaveFromCard {
+    background: linear-gradient(180deg, #c62828, #8b1a1a);
+    color: #fff;
+  }
+
+  /* Iconos LINEA y BINGO con cuadritos */
+  .icon-line,
+  .icon-bingo {
+    display: inline-grid;
+    gap: 1px;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+  .icon-line {
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 1fr;
+  }
+  .icon-bingo {
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+  }
+  .icon-line span,
+  .icon-bingo span {
+    display: block;
+    width: 0.55em;
+    height: 0.55em;
+    border-radius: 1px;
+    opacity: 0.95;
+  }
+  .icon-line span:nth-child(5n+1),
+  .icon-bingo span:nth-child(5n+1) { background: #64b5f6; }
+  .icon-line span:nth-child(5n+2),
+  .icon-bingo span:nth-child(5n+2) { background: #81c784; }
+  .icon-line span:nth-child(5n+3),
+  .icon-bingo span:nth-child(5n+3) { background: #ffb74d; }
+  .icon-line span:nth-child(5n+4),
+  .icon-bingo span:nth-child(5n+4) { background: #ba68c8; }
+  .icon-line span:nth-child(5n+5),
+  .icon-bingo span:nth-child(5n+5) { background: #ef5350; }
+  .btn-line-full .icon-line span,
+  .btn-bingo-full .icon-bingo span {
+    width: 0.5em;
+    height: 0.5em;
+  }
+  .pool-info .icon-line span,
+  .pool-info .icon-bingo span {
+    width: 0.45em;
+    height: 0.45em;
+  }
+  .icon-line.won span,
+  .icon-bingo.won span {
+    background: #66bb6a !important;
+    box-shadow: 0 0 4px rgba(102, 187, 106, 0.8);
+  }
+  .icon-line.locked span,
+  .icon-bingo.locked span {
+    background: #5a7a9e !important;
+    opacity: 0.5;
+  }
+  .icon-line.pending span,
+  .icon-bingo.pending span {
+    background: #f5c542;
+    animation: iconPendingPulse 1s ease-in-out infinite;
+  }
+  @keyframes iconPendingPulse {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 1; }
+  }
+
+  .lang-btn {
+    background: transparent;
+    border: none;
+    color: #90a4c4;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 16px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+  .lang-btn:hover { color: #f5c542; }
+  .lang-btn.active {
+    background: linear-gradient(180deg, #f5c542, #e8a020);
+    color: #1a1a1a;
+  }
+</style>
+</head>
+<body>
+
+<div class="screen active" id="screen-login">
+<a href="/master" class="master-link">👑 MASTER</a>
+  <div class="login-hero">
+    <div class="dice">🎱</div>
+    <h1 id="loginBarName">ALDEA BELLA</h1>
+    <div class="sub" data-i18n="login.sub">Bingo Night</div>
+  </div>
+  <div class="field">
+    <label data-i18n="login.session_code">Session Code</label>
+    <input type="text" id="inputCode" class="code-input" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters" />
+  </div>
+  <div class="field">
+    <label>
+      <span data-i18n="login.your_name">Your Name</span>
+      <button type="button" class="change-btn" id="btnChangeName" data-i18n="login.change">✏️ Change</button>
+    </label>
+    <input type="text" id="inputName" maxlength="20" placeholder="e.g. Maria" autocomplete="off" />
+  </div>
+  <button class="btn btn-primary" id="btnJoin" data-i18n="login.join">🎫 Join the game</button>
+  <div class="error" id="loginError"></div>
+</div>
+
+<div class="screen" id="screen-waiting">
+  <div class="waiting-box">
+    <div class="waiting-icon">⏳</div>
+    <h2 class="waiting-title" data-i18n="waiting.title">Esperando al anfitrión</h2>
+    <p class="waiting-text" data-i18n="waiting.text">En cuanto te apruebe, empieza la partida. No cierres esta pantalla.</p>
+
+    <div class="waiting-card">
+      <div class="waiting-row">
+        <span class="wlabel" data-i18n="waiting.name">Nombre</span>
+        <span class="wvalue" id="waitingName">—</span>
+      </div>
+      <div class="waiting-row">
+        <span class="wlabel" data-i18n="waiting.session">Sesión</span>
+        <span class="wvalue gold" id="waitingCode">—</span>
+      </div>
+    </div>
+
+    <div class="waiting-pulse-dots">
+      <span></span><span></span><span></span>
+    </div>
+
+    <button class="waiting-cancel" id="btnCancelWaiting" data-i18n="waiting.cancel">✏️ Cancelar</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-waiting-room">
+  <div class="waiting-room-box">
+    <h2 class="wr-title" data-i18n="wr.title">🚪 SALA DE ESPERA</h2>
+    <p class="wr-subtitle" data-i18n="wr.subtitle">Pulsa LISTO para empezar</p>
+
+    <div class="wr-progress-circle" id="wrProgressCircle">
+      <svg viewBox="0 0 120 120" class="wr-svg">
+        <circle cx="60" cy="60" r="52" class="wr-circle-bg"></circle>
+        <circle cx="60" cy="60" r="52" class="wr-circle-fg" id="wrCircleFg"></circle>
+      </svg>
+      <div class="wr-progress-text">
+        <div class="wr-progress-numbers" id="wrProgressNumbers">0/0</div>
+        <div class="wr-progress-label" data-i18n="wr.players_label">listos</div>
+      </div>
+    </div>
+
+    <div class="wr-countdown" id="wrCountdown" style="display:none;">
+      <div class="wr-countdown-label" data-i18n="wr.countdown_label">¡PREPARADOS!</div>
+      <div class="wr-countdown-number" id="wrCountdownNumber">30</div>
+    </div>
+
+    <button class="wr-ready-btn" id="wrReadyBtn" data-i18n="wr.ready_btn">
+      ✅ ESTOY LISTO
+    </button>
+
+    <div class="wr-ready-done" id="wrReadyDone" style="display:none;">
+      <div class="wr-ready-done-icon">✅</div>
+      <div class="wr-ready-done-text" data-i18n="wr.ready_done">¡Listo! Esperando a los demás…</div>
+    </div>
+
+    <div class="wr-players" id="wrPlayers"></div>
+    <button class="btn wr-leave-btn" id="wrLeaveBtn" data-i18n="wr.leave">
+      🚪 Salir
+    </button>
+  </div>
+</div>
+
+<div class="screen" id="screen-approved">
+  <div class="approved-hero">
+    <div class="check">✅</div>
+    <h2 data-i18n="approved.title">You're in!</h2>
+    <p data-i18n="approved.text">Good luck 🍀<br/>Your card will appear in a moment…</p>
+  </div>
+</div>
+
+<div class="screen" id="screen-ready-wait">
+  <div class="ready-wait-screen">
+    <div class="ready-wait-header">
+      <div class="bar-name" data-bar-name>🎱 ALDEA BELLA</div>
+      <button id="btnLeaveFromReadyWait" style="
+        background: rgba(198, 40, 40, 0.85);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        flex-shrink: 0;
+        padding: 0;
+        line-height: 1;
+      " title="Salir" data-i18n-title="game.leave">🚪</button>
+    </div>
+    <div class="ready-wait-card">
+      <div id="readyWaitCard" style="
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: auto repeat(4, 1fr);
+        gap: clamp(3px, 0.8vw, 5px);
+        flex: 1;
+      "></div>
+
+      <div class="ready-wait-overlay">
+        <div class="ready-wait-badge">
+          <div class="ready-wait-icon">⏳</div>
+          <h2 class="ready-wait-title" data-i18n="readyWait.title">Esperando al host…</h2>
+          <p class="ready-wait-subtitle" data-i18n="readyWait.subtitle">En cuanto pulse START, tu cartón se rellenará solo.</p>
+          <div class="ready-wait-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-game">
+  <div class="game-header">
+    <div>
+      <div class="bar-name" data-bar-name>🎱 ALDEA BELLA</div>
+      <div class="player-name-row">
+        <span class="player-name" id="gamePlayerName">—</span>
+        <span class="game-stat" id="gameStatTimer" style="display:none;">⏱️ <b id="roundTimer">00:00</b></span>
+        <span class="game-stat" id="gameStatBalls" style="display:none;">🎱 <b id="ballsCounter">0/75</b></span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <div class="round-tag practice hidden" id="roundTag" style="display:none;">PRACTICE</div>
+      <button id="btnLeaveFloating" style="
+        background: rgba(198, 40, 40, 0.85);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        display: none;
+        flex-shrink: 0;
+        padding: 0;
+        line-height: 1;
+      " title="Leave game" data-i18n-title="game.leave">🚪</button>
+    </div>
+  </div>
+
+  <div class="pool-info hidden" id="poolInfo">
+    <span>💰 <span data-i18n="game.pool">Pool</span>: <strong id="poolTotal">€0</strong></span>
+    <span class="prize-item" id="prizeLineItem">
+      <span class="icon" id="iconLine">🥉</span>
+      <span class="line"><span data-i18n="game.line">Line</span>:</span>
+      <strong id="poolLine">€0</strong>
+    </span>
+    <span class="prize-item" id="prizeBingoItem">
+      <span class="icon" id="iconBingo">🥈</span>
+      <span class="bingo"><span data-i18n="game.bingo">Bingo</span>:</span>
+      <strong id="poolBingo">€0</strong>
+    </span>
+  </div>
+
+  <div class="balls-row">
+    <div class="ball-current" id="ballCurrent">
+      <div class="letter" id="ballCurrentLetter"></div>
+      <div class="number none" id="ballCurrentNumber">—</div>
+    </div>
+    <div class="ball-prev" id="ballPrev"></div>
+  </div>
+
+  <div class="card-wrap" id="cardWrap">
+    <div class="practice-badge hidden" id="practiceBadge">🎓 Practice</div>
+    <div class="bingo-card" id="bingoCard"></div>
+  </div>
+
+  <div class="claim-ready-banner" id="claimReadyBanner"></div>
+
+  <div class="actions">
+    <button class="btn-line-full" id="btnLine" data-i18n="claim.line" disabled>🥉 LINE!</button>
+    <button class="btn-bingo-full" id="btnBingo" data-i18n="claim.bingo" disabled>🥈 BINGO!</button>
+  </div>
+
+  <div class="help-text" data-i18n="game.help">
+    Tap the numbers as they are called.
+  </div>
+
+  <div id="lockedActions">
+    <div class="locked-grid">
+      <button id="btnPlayAgainFromCard">🎮 Jugar</button>
+      <button id="btnLeaveFromCard">🚪 Salir</button>
+    </div>
+  </div>
+
+  <div class="wake-lock-indicator" id="wakeLockIndicator">
+    <span class="dot"></span>💡 <span data-i18n="game.screen_on">Pantalla siempre encendida</span>
+  </div>
+</div>
+
+<div class="screen" id="screen-round-end">
+  <div class="round-end">
+    <h2 data-i18n="end.title">🏁 ¡Partida terminada!</h2>
+    <div id="roundEndSummary" style="margin: 20px 0;"></div>
+
+    <div id="roundEndActions" style="max-width: 320px; margin: 24px auto 0;">
+      <button class="btn" id="btnShowCard" data-i18n="end.show_card" style="
+        background: linear-gradient(180deg, #f5c542, #e8a020);
+        color: #1a1a1a;
+        width: 100%;
+        display: block;
+        font-weight: 800;
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+      ">
+        👁️ Mostrar mi cartón
+      </button>
+      <button class="btn" id="btnPlayAgain" data-i18n="end.play_again" style="
+        background: linear-gradient(180deg, #43a047, #2e7d32);
+        color: #fff;
+        width: 100%;
+        display: block;
+        font-weight: 800;
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+      ">
+        🎮 Jugar otra vez
+      </button>
+      <button class="btn" id="btnLeaveRoundEnd2" data-i18n="end.leave" style="
+        background: linear-gradient(180deg, #c62828, #8b1a1a);
+        color: #fff;
+        width: 100%;
+        display: block;
+        font-weight: 800;
+        padding: 16px;
+        border-radius: 12px;
+      ">
+        🚪 Salir
+      </button>
+    </div>
+
+    <div id="roundEndCardView" style="display:none; max-width: 440px; margin: 16px auto 0;">
+      <div id="roundEndCardContainer"></div>
+
+      <div id="roundEndCardActions" style="margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <button class="btn" id="btnPlayAgainFromCard2" data-i18n="end.play_again" style="
+          background: linear-gradient(180deg, #43a047, #2e7d32);
+          color: #fff;
+          font-weight: 800;
+          padding: 16px;
+          border-radius: 12px;
+        ">
+          🎮 Jugar
+        </button>
+        <button class="btn" id="btnLeaveFromCard2" data-i18n="end.leave" style="
+          background: linear-gradient(180deg, #c62828, #8b1a1a);
+          color: #fff;
+          font-weight: 800;
+          padding: 16px;
+          border-radius: 12px;
+        ">
+          🚪 Salir
+        </button>
+      </div>
+
+      <div id="remainingBallsContainer" style="margin-top: 24px; display: none;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-kicked">
+  <div class="kicked-box">
+    <div class="icon" id="kickedIcon">🚪</div>
+    <h2 id="kickedTitle">Removed from game</h2>
+    <p id="kickedMessage">The host has removed you from the current session.</p>
+    <button class="btn-back-to-login" id="btnBackToLogin">
+      🔙 Volver al login
+    </button>
+  </div>
+</div>
+
+<div class="pause-overlay" id="pauseOverlay">
+  <div class="pause-content">
+    <span class="pause-icon" id="pauseIcon">⏸️</span>
+    <h2 class="pause-title" id="pauseTitle" data-i18n="pause.title">PAUSED</h2>
+    <p class="pause-message" id="pauseMessage"></p>
+    <p class="pause-hint"><span data-i18n="pause.host_verifying">The host is verifying the claim</span><span class="pause-dots"></span></p>
+  </div>
+</div>
+
+<div class="claim-window-overlay" id="claimWindowOverlay">
+  <div class="claim-window-content">
+    <span class="claim-window-icon" id="cwIcon">🤝</span>
+    <h2 class="claim-window-title" id="cwTitle">CLAIM WINDOW</h2>
+    <div class="claim-window-counter" id="cwCounter">15s</div>
+    <div id="cwActions"></div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <span class="confirm-icon" id="confirmIcon">❓</span>
+    <h3 class="confirm-title" id="confirmTitle">Confirm</h3>
+    <p class="confirm-message" id="confirmMessage"></p>
+    <div class="confirm-buttons">
+      <button class="confirm-no" id="confirmNo" data-i18n="confirm.cancel">Cancel</button>
+      <button class="confirm-yes" id="confirmYes" data-i18n="confirm.ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="reconnectBanner" data-i18n="reconnect.banner" style="
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: linear-gradient(180deg, #ef6c00, #e65100);
+  color: #fff;
+  text-align: center;
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  display: none;
+  letter-spacing: 0.5px;
+">
+  🔄 Reconectando…
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<audio id="audioVoicePlayer" preload="auto"></audio>
+<audio id="audioApplausePlayer" preload="auto"></audio>
+<audio id="audioLineaPlayer" preload="auto"></audio>
+<audio id="audioBingoPlayer" preload="auto"></audio>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function iconLineHtml(extraClass = "") {
+  const cells = "<span></span>".repeat(5);
+  return '<span class="icon-line ' + extraClass + '">' + cells + "</span>";
+}
+
+function iconBingoHtml(extraClass = "") {
+  const cells = "<span></span>".repeat(20);
+  return '<span class="icon-bingo ' + extraClass + '">' + cells + "</span>";
+}
+
+function updateBarName(name) {
+  if (!name) return;
+  const loginBarName = $("loginBarName");
+  if (loginBarName) loginBarName.textContent = name.toUpperCase();
+  document.querySelectorAll("[data-bar-name]").forEach(el => {
+    el.textContent = "🍺 " + name.toUpperCase();
+  });
+  document.title = "🎱 " + name + " Bingo";
+}
+
+let soundConfig = {
+  enabled: true,
+  voiceBalls: true,
+  applauseOnLine: false,
+  applauseOnBingo: true,
+  applauseOnRoundStart: false,
+  playOnMaster: true,
+  playOnPlayers: true,
+  playOnDisplay: true,
+  volume: 0.7
+};
+
+let audioUnlocked = false;
+function unlockAudio() {
+  if (audioUnlocked) return;
+  try {
+    const els = [$("audioVoicePlayer"), $("audioApplausePlayer")];
+    els.forEach(el => {
+      if (!el) return;
+      el.volume = 0.001;
+      const pr = el.play();
+      if (pr) pr.then(() => { el.pause(); el.currentTime = 0; }).catch(() => {});
+    });
+    audioUnlocked = true;
+  } catch (e) {}
+}
+["click", "touchstart", "touchend"].forEach(ev => {
+  document.addEventListener(ev, unlockAudio, { once: true, passive: true });
+});
+
+function playVoicePlayer(num) {
+  if (!soundConfig.enabled || !soundConfig.voiceBalls || !soundConfig.playOnPlayers) return;
+  try {
+    const el = $("audioVoicePlayer");
+    if (!el) return;
+    el.pause();
+    el.src = "Audio/" + num + ".wav";
+    el.volume = soundConfig.volume ?? 0.7;
+    el.load();
+    const pr = el.play();
+    if (pr) pr.catch(err => console.warn("playVoice fail", err.message));
+  } catch (e) {}
+}
+
+function playApplausePlayer() {
+  if (!soundConfig.enabled || !soundConfig.playOnPlayers) return;
+  try {
+    const el = $("audioApplausePlayer");
+    if (!el) return;
+    el.pause();
+    el.src = "Audio/Aplausos.wav";
+    el.volume = soundConfig.volume ?? 0.7;
+    el.currentTime = 0;
+    el.load();
+    const pr = el.play();
+    if (pr) pr.catch(() => {});
+  } catch (e) {}
+}
+
+function playLineaPlayer() {
+  if (!soundConfig.enabled || !soundConfig.playOnPlayers) return;
+  try {
+    const el = $("audioLineaPlayer");
+    if (!el) return;
+    el.pause();
+    el.src = "Audio/Linea.mp3";
+    el.volume = soundConfig.volume ?? 0.7;
+    el.currentTime = 0;
+    el.load();
+    const pr = el.play();
+    if (pr) pr.catch(() => {});
+  } catch (e) {}
+}
+
+function playBingoPlayer() {
+  if (!soundConfig.enabled || !soundConfig.playOnPlayers) return;
+  try {
+    const el = $("audioBingoPlayer");
+    if (!el) return;
+    el.pause();
+    el.src = "Audio/Bingo.mp3";
+    el.volume = soundConfig.volume ?? 0.7;
+    el.currentTime = 0;
+    el.load();
+    const pr = el.play();
+    if (pr) pr.catch(() => {});
+  } catch (e) {}
+}
+
+let lastClaimLastBall = null;
+let lastClaimEligibleIds = [];
+
+function cardContainsNumber(num) {
+  if (!myCard || num == null) return false;
+  return myCard.numbers.flat().includes(num);
+}
+
+let ws = null;
+let myName = "";
+let myCode = "";
+let myCard = null;
+let myCards = [];
+let myCardIndex = 0;
+let myFreeCellsCount = 1;
+let currentRound = null;
+let waitingStartTime = null;
+let waitingTimerInterval = null;
+let lastBallNumber = null;
+
+let unattendedMode = "off";
+let waitingRoomState = {
+  ready: 0,
+  total: 0,
+  countdownActive: false,
+  secondsLeft: 0,
+  iAmReady: false,
+  players: []
+};
+let countdownInterval = null;
+
+let joinedSuccessfully = false;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+let reconnecting = false;
+let wsLastMessageAt = null;
+
+let claimWindowInterval = null;
+let claimWindowEndsAt = null;
+let claimWindowType = null;
+
+let myClaimPending = { line: false, bingo: false };
+let readyState = { awaiting: false, ready: 0, total: 0, iAmReady: false };
+let myClaimedThisRound = { line: false, bingo: false };
+let modalOpenSent = false;
+
+let wakeLock = null;
+let wakeLockSupported = "wakeLock" in navigator;
+
+let roundPrizes = { line: null, bingo: null };
+let lastWinData = null;
+let cardLocked = false;
+let poolValues = { total: 0, line: 0, bingo: 0 };
+
+let ballHistory = [];
+let ballHistorySize = 3;
+
+let roundTimerInterval = null;
+let roundStartedAt = null;
+let roundPausedMs = 0;
+let roundPausedAt = null;
+let roundEndedAt = null;
+
+let hasReloadedOnLogin = sessionStorage.getItem("ab_reloaded_on_login") === "1";
+
+window.__calledNumbers = new Set();
+
+function showScreen(name) {
+  if (name === "login") {
+    const hasResidualState =
+      (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) ||
+      joinedSuccessfully ||
+      myCard !== null ||
+      (myCards && myCards.length > 0) ||
+      currentRound !== null;
+
+    if (hasResidualState && !hasReloadedOnLogin) {
+      sessionStorage.setItem("ab_reloaded_on_login", "1");
+      location.reload();
+      return;
+    }
+    sessionStorage.removeItem("ab_reloaded_on_login");
+  }
+
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  const el = $("screen-" + name);
+  if (el) el.classList.add("active");
+  window.scrollTo(0, 0);
+
+  const btnFloat = $("btnLeaveFloating");
+  if (btnFloat) {
+    btnFloat.style.display = (name === "game" && !cardLocked) ? "inline-flex" : "none";
+    btnFloat.style.alignItems = "center";
+    btnFloat.style.justifyContent = "center";
+  }
+  if (name === "game" || name === "approved" || name === "ready-wait") {
+    setTimeout(() => requestWakeLock(), 500);
+  } else if (name === "round-end" || name === "kicked" || name === "login") {
+    releaseWakeLock();
+  }
+  if (name === "round-end" || name === "kicked" || name === "login") {
+    stopWaitingTimer();
+  }
+}
+
+$("inputCode").addEventListener("input", e => {
+  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+});
+$("inputName").addEventListener("input", e => {
+  e.target.value = e.target.value.toUpperCase();
+});
+$("btnJoin").onclick = doJoin;
+$("inputName").addEventListener("keydown", e => { if (e.key === "Enter") doJoin(); });
+$("inputCode").addEventListener("keydown", e => { if (e.key === "Enter") doJoin(); });
+
+function showReconnectBanner() {
+  const banner = $("reconnectBanner");
+  if (banner) banner.classList.add("active");
+}
+
+function hideReconnectBanner() {
+  const banner = $("reconnectBanner");
+  if (banner) banner.classList.remove("active");
+}
+
+function doJoin() {
+  const code = $("inputCode").value.trim().toUpperCase();
+  const name = $("inputName").value.trim().toUpperCase();
+  if (!code) {
+    $("loginError").textContent = t("login.err_code");
+    return;
+  }
+  if (!name) {
+    $("loginError").textContent = t("login.err_name");
+    return;
+  }
+  myCode = code;
+  myName = name;
+  $("loginError").textContent = "";
+  connectWS();
+}
+
+function connectWS() {
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+    try { ws.close(); } catch (e) {}
+  }
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  const wsUrl = `${proto}://${location.host}`;
+  $("loginError").textContent = t("login.connecting");
+  try {
+    ws = new WebSocket(wsUrl);
+  } catch (e) {
+    $("loginError").innerHTML = "Error creando WebSocket: " + e.message + "<br><small>Abre https://" + location.hostname + ":3000 en otra pestaña y acepta el certificado</small>";
+    return;
+  }
+  ws.onopen = () => {
+    $("loginError").textContent = "";
+    reconnectAttempts = 0;
+    reconnecting = false;
+    wsLastMessageAt = Date.now();
+    hideReconnectBanner();
+    ws.send(JSON.stringify({ type: "player_join", code: myCode, name: myName }));
+  };
+  ws.onmessage = e => {
+    wsLastMessageAt = Date.now();
+    try { handleMessage(JSON.parse(e.data)); } catch (err) { console.error(err); }
+  };
+  ws.onclose = () => {
+    if (!joinedSuccessfully) {
+      $("loginError").innerHTML = "No conecta.<br><small>1) ¿Aceptaste el certificado en https://" + location.hostname + ":3000?<br>2) ¿Código correcto? (" + myCode + ")</small>";
+    } else {
+      if (!reconnecting) {
+        reconnecting = true;
+        showReconnectBanner();
+      }
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      reconnectTimer = setTimeout(() => {
+        reconnectAttempts++;
+        connectWS();
+      }, 1000);
+    }
+  };
+  ws.onerror = () => {
+    $("loginError").innerHTML = "Error de WebSocket.<br><small>En el móvil abre primero https://" + location.hostname + ":3000 y acepta el certificado</small>";
+  };
+}
+
+function fmtTimer(ms) {
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+}
+
+function startRoundTimer(startedAt, pausedMs = 0) {
+  stopRoundTimer();
+  roundStartedAt = startedAt || Date.now();
+  roundPausedMs = pausedMs || 0;
+  roundPausedAt = null;
+  roundEndedAt = null;
+  const el = $("gameStatTimer");
+  if (el) el.style.display = "inline-flex";
+  tickRoundTimer();
+  roundTimerInterval = setInterval(tickRoundTimer, 1000);
+}
+
+function tickRoundTimer() {
+  const b = $("roundTimer");
+  if (!b || !roundStartedAt) return;
+  const now = roundEndedAt || Date.now();
+  let elapsed = now - roundStartedAt - roundPausedMs;
+  if (roundPausedAt) elapsed = roundPausedAt - roundStartedAt - roundPausedMs;
+  b.textContent = fmtTimer(elapsed);
+}
+
+function pauseRoundTimer() {
+  if (roundPausedAt) return;
+  roundPausedAt = Date.now();
+  const el = $("gameStatTimer");
+  if (el) el.classList.add("paused");
+  tickRoundTimer();
+}
+
+function resumeRoundTimer() {
+  if (roundPausedAt) {
+    roundPausedMs += (Date.now() - roundPausedAt);
+    roundPausedAt = null;
+  }
+  const el = $("gameStatTimer");
+  if (el) el.classList.remove("paused");
+  tickRoundTimer();
+}
+
+function freezeRoundTimer() {
+  if (roundEndedAt) return;
+  roundEndedAt = roundPausedAt || Date.now();
+  stopRoundTimer();
+  tickRoundTimer();
+}
+
+function stopRoundTimer() {
+  if (roundTimerInterval) {
+    clearInterval(roundTimerInterval);
+    roundTimerInterval = null;
+  }
+  const el = $("gameStatTimer");
+  if (el) el.classList.remove("paused");
+}
+
+function resetRoundTimer() {
+  stopRoundTimer();
+  roundStartedAt = null;
+  roundPausedMs = 0;
+  roundPausedAt = null;
+  roundEndedAt = null;
+  const el = $("gameStatTimer");
+  if (el) el.style.display = "none";
+  const b = $("roundTimer");
+  if (b) b.textContent = "00:00";
+}
+
+function updateBallsCounter() {
+  const el = $("gameStatBalls");
+  const b = $("ballsCounter");
+  if (!el || !b) return;
+  if (!currentRound) {
+    el.style.display = "none";
+    return;
+  }
+  el.style.display = "inline-flex";
+  const ballsPerCol = Number(window.__ballsPerColumn) || 15;
+  const totalBalls = ballsPerCol * 5;
+  const called = window.__calledNumbers ? window.__calledNumbers.size : 0;
+  b.textContent = `${called}/${totalBalls}`;
+}
+
+function renderBallsRow() {
+  const current = ballHistory[ballHistory.length - 1];
+  const curEl = $("ballCurrent");
+  const curLetterEl = $("ballCurrentLetter");
+  const curNumberEl = $("ballCurrentNumber");
+
+  curEl.classList.remove("letter-b", "letter-i", "letter-n", "letter-g", "letter-o");
+
+  if (current) {
+    curEl.classList.add("letter-" + current.letter.toLowerCase());
+    curLetterEl.textContent = current.letter;
+    curNumberEl.classList.remove("none");
+    if (curNumberEl.textContent !== String(current.number)) {
+      curNumberEl.textContent = current.number;
+      curNumberEl.classList.remove("pop");
+      void curNumberEl.offsetWidth;
+      curNumberEl.classList.add("pop");
+    }
+  } else {
+    curLetterEl.textContent = "";
+    curNumberEl.classList.add("none");
+    curNumberEl.textContent = "—";
+  }
+
+  const prevContainer = $("ballPrev");
+  const size = ballHistorySize;
+
+  if (prevContainer.children.length !== size) {
+    prevContainer.innerHTML = "";
+    for (let i = 0; i < size; i++) {
+      const el = document.createElement("div");
+      el.className = "ball-prev-item empty";
+      el.dataset.pos = i;
+      el.innerHTML = `<div class="letter">—</div><div class="number">—</div>`;
+      prevContainer.appendChild(el);
+    }
+  }
+
+  for (let i = 0; i < size; i++) {
+    const el = prevContainer.children[i];
+    const idx = ballHistory.length - 2 - i;
+    el.classList.remove("letter-b", "letter-i", "letter-n", "letter-g", "letter-o");
+
+    if (idx >= 0 && ballHistory[idx]) {
+      const b = ballHistory[idx];
+      el.classList.remove("empty");
+      el.classList.add("letter-" + b.letter.toLowerCase());
+      el.innerHTML = `<div class="letter">${b.letter}</div><div class="number">${b.number}</div>`;
+      const opacities = [1, 0.85, 0.72, 0.6, 0.5];
+      el.style.opacity = String(opacities[i] || 0.5);
+    } else {
+      el.classList.add("empty");
+      el.innerHTML = `<div class="letter">—</div><div class="number">—</div>`;
+      el.style.opacity = "";
+    }
+  }
+}
+
+function handleMessage(msg) {
+  switch (msg.type) {
+
+    case "join_error":
+      joinedSuccessfully = false;
+      if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+      $("loginError").textContent = "❌ " + msg.message;
+      if (ws) { try { ws.close(); } catch (e) {} }
+      showScreen("login");
+      break;
+
+    case "claim_validated":
+      myClaimPending.line = false;
+      myClaimPending.bingo = false;
+      highlightWinningCells();
+      updateClaimButtons();
+      break;
+
+    case "player_waiting":
+      sessionStorage.removeItem("ab_reloaded_on_login");
+      joinedSuccessfully = true;
+      reconnectAttempts = 0;
+      showScreen("waiting");
+      $("waitingName").textContent = myName;
+      $("waitingCode").textContent = myCode;
+      startWaitingTimer();
+      break;
+
+    case "player_reconnected":
+      sessionStorage.removeItem("ab_reloaded_on_login");
+      joinedSuccessfully = true;
+      reconnectAttempts = 0;
+      if (msg.barName) updateBarName(msg.barName);
+      myName = msg.name;
+      $("waitingName").textContent = myName;
+      $("waitingCode").textContent = myCode;
+      $("gamePlayerName").textContent = myName;
+
+      if (msg.lineClaimPending !== undefined) myClaimPending.line = !!msg.lineClaimPending;
+      if (msg.bingoClaimPending !== undefined) myClaimPending.bingo = !!msg.bingoClaimPending;
+      if (msg.ballHistorySize) ballHistorySize = msg.ballHistorySize;
+      if (msg.ballsPerColumn != null) window.__ballsPerColumn = Number(msg.ballsPerColumn);
+
+      if (msg.status === "pending" || msg.status === "paid") {
+        startWaitingTimer();
+        showScreen("waiting");
+        if (msg.status === "paid") toast(t("toast.payment_ok"), "success");
+      } else if (msg.status === "approved" && msg.paid === true) {
+        stopWaitingTimer();
+        const hasActiveRound = msg.round && (msg.round.status === "playing" || msg.round.status === "paused" || msg.round.status === "paused_manual");
+        if (unattendedMode === "free" && !hasActiveRound) {
+          showWaitingRoom();
+        } else if (!hasActiveRound) {
+          renderEmptyCard();
+          showScreen("ready-wait");
+        } else {
+          showScreen("game");
+        }
+        if (msg.round) {
+          currentRound = msg.roundType;
+          if (msg.round.freeCells != null) {
+            myFreeCellsCount = Math.max(1, Math.min(10, Number(msg.round.freeCells) || 1));
+          }
+          window.__calledNumbers = new Set();
+          ballHistory = [];
+          (msg.round.calledBalls || []).forEach(b => {
+            window.__calledNumbers.add(b.number);
+            ballHistory.push({ letter: b.letter, number: b.number });
+          });
+          renderBallsRow();
+
+          if (msg.round.status === "playing" || msg.round.status === "paused" || msg.round.status === "paused_manual") {
+            const startedAt = msg.round.startedAt || Date.now();
+            const extraPaused = (msg.round.pausedAt && msg.round.pausedAt > startedAt)
+              ? (Date.now() - msg.round.pausedAt)
+              : 0;
+            startRoundTimer(startedAt, extraPaused);
+            if (msg.round.status === "paused" || msg.round.status === "paused_manual") {
+              pauseRoundTimer();
+            }
+          } else if (msg.round.status === "ended") {
+            const startedAt = msg.round.startedAt || Date.now();
+            const endedAt = msg.round.endedAt || startedAt;
+            startRoundTimer(startedAt, 0);
+            roundEndedAt = endedAt;
+            stopRoundTimer();
+            tickRoundTimer();
+          }
+          updateBallsCounter();
+
+          if (msg.round.pausedFor && !msg.round.claimWindow) {
+            const reason = msg.round.pausedFor === "bingo" ? "BINGO" : "LINE";
+            showPauseOverlay(`${reason} claim in progress — Waiting for host to verify…`);
+          }
+          if (msg.round.winners) {
+            restoreRoundPrizes(msg.round.winners);
+            if (msg.round.winners.line) myClaimedThisRound.line = true;
+            if (msg.round.winners.bingo) myClaimedThisRound.bingo = true;
+          }
+        }
+        if (msg.cards && msg.cards.length > 0) {
+          myCards = msg.cards;
+          myCardIndex = 0;
+          myCard = myCards[0];
+          if (msg.roundType === "practice") {
+            $("practiceBadge").classList.remove("hidden");
+            $("cardWrap").classList.add("practice");
+            $("roundTag").textContent = "PRACTICE";
+            $("roundTag").className = "round-tag practice";
+            $("roundTag").style.display = "inline-block";
+          } else {
+            $("practiceBadge").classList.add("hidden");
+            $("cardWrap").classList.remove("practice");
+            $("roundTag").style.display = "none";
+          }
+          if (msg.pool) {
+            poolValues.total = msg.pool.totalCollected;
+            poolValues.line = msg.pool.breakdown.line;
+            poolValues.bingo = msg.pool.breakdown.bingo;
+            $("poolInfo").classList.remove("hidden");
+            $("poolTotal").textContent = "€" + poolValues.total.toFixed(2);
+            renderPoolIcons();
+          }
+          renderCard();
+        }
+      }
+      if (msg.sounds) soundConfig = { ...soundConfig, ...msg.sounds };
+      break;
+
+    case "waiting_room_state":
+      unattendedMode = msg.unattendedMode || "off";
+      waitingRoomState.ready = msg.ready || 0;
+      waitingRoomState.total = msg.total || 0;
+      waitingRoomState.countdownActive = !!msg.countdownActive;
+      waitingRoomState.secondsLeft = msg.secondsLeft || 0;
+      waitingRoomState.players = msg.players || [];
+      waitingRoomState.iAmReady = (msg.players || []).some(p =>
+        p.name && p.name.toUpperCase() === myName.toUpperCase() && p.ready
+      );
+      if (unattendedMode === "free") {
+        const activeScreen = document.querySelector(".screen.active");
+        const activeId = activeScreen ? activeScreen.id : "";
+        if (activeId !== "screen-game" && activeId !== "screen-round-end" && activeId !== "screen-waiting-room") {
+          showWaitingRoom();
+        }
+        renderWaitingRoom();
+      }
+      break;
+
+    case "waiting_room_countdown":
+      waitingRoomState.countdownActive = true;
+      waitingRoomState.secondsLeft = msg.seconds || 0;
+      startCountdownTick(msg.seconds || 0);
+      renderWaitingRoom();
+      if (unattendedMode === "free") {
+        const activeScreen = document.querySelector(".screen.active");
+        if (!activeScreen || activeScreen.id !== "screen-waiting-room") showWaitingRoom();
+      }
+      break;
+
+    case "waiting_room_countdown_cancelled":
+      waitingRoomState.countdownActive = false;
+      waitingRoomState.secondsLeft = 0;
+      stopCountdownTick();
+      renderWaitingRoom();
+      break;
+
+    case "awaiting_payout": {
+      window.__awaitingPayout = {
+        active: true,
+        claim: msg.claim,
+        winners: msg.winners || [],
+        paid: 0,
+        total: (msg.winners || []).length
+      };
+      window.__payoutPaidSent = false;
+
+      const claimLabel = msg.claim === "bingo" ? t("payout.title_bingo") : t("payout.title_line");
+      const winnersNames = (msg.winners || []).map(w => w.playerName).join(", ");
+      const iAmWinner = (msg.winners || []).some(w =>
+        w.playerName && w.playerName.toUpperCase() === myName.toUpperCase()
+      );
+
+      $("pauseIcon").textContent = msg.claim === "bingo" ? "🏆" : "🥉";
+      $("pauseTitle").textContent = claimLabel;
+
+      ["pauseWinnerBox", "readyBox", "payoutCountdownBox"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+      });
+
+      const content = document.querySelector(".pause-content");
+      const hint = content.querySelector(".pause-hint");
+
+      if (iAmWinner) {
+        $("pauseMessage").textContent = t("payout.winner_msg", { claim: claimLabel });
+        const myWin = (msg.winners || []).find(w =>
+          w.playerName && w.playerName.toUpperCase() === myName.toUpperCase()
+        );
+
+        const box = document.createElement("div");
+        box.id = "pauseWinnerBox";
+        box.style.cssText = `margin: 20px auto; padding: 18px 20px; background: linear-gradient(135deg, #0e3a1a, #1e4620); border: 2px solid #66bb6a; border-radius: 14px; max-width: 340px;`;
+        box.innerHTML = `
+          <div style="font-size:0.8rem; letter-spacing:2px; color:#a5d6a7; text-transform:uppercase; margin-bottom:10px;">${t("payout.receipt")}</div>
+          <div style="font-size:1.4rem; font-weight:900; color:#f5c542; font-family:'Courier New', monospace; letter-spacing:3px; text-align:center;">
+            ${myWin.code || "AB-????"}
+          </div>
+          <div style="font-size:0.85rem; color:#a5d6a7; margin-top:8px; text-align:center;">
+            ${t("payout.prize", { amount: (myWin.amount || 0).toFixed(2) })}
+          </div>
+        `;
+
+        const btnWrap = document.createElement("div");
+        btnWrap.id = "readyBox";
+        btnWrap.style.cssText = "margin-top:14px; text-align:center;";
+        btnWrap.innerHTML = `
+          <button id="btnReady" style="padding:16px 24px; font-size:1.1rem; font-weight:800; border-radius:12px; border:none; background:linear-gradient(180deg,#43a047,#2e7d32); color:#fff; width:100%; cursor:pointer; letter-spacing:0.5px; box-shadow:0 4px 12px rgba(67,160,71,0.4);">
+            ${t("payout.ok_paid")}
+          </button>
+        `;
+
+        if (hint) {
+          content.insertBefore(box, hint);
+          content.insertBefore(btnWrap, hint);
+          hint.textContent = t("payout.when_all_ok");
+        } else {
+          content.appendChild(box);
+          content.appendChild(btnWrap);
+        }
+        document.getElementById("btnReady").onclick = markPaid;
+      } else {
+        $("pauseMessage").textContent = t("payout.others_msg", { claim: claimLabel, names: winnersNames });
+        const infoBox = document.createElement("div");
+        infoBox.id = "pauseWinnerBox";
+        infoBox.style.cssText = `margin: 20px auto; padding: 18px 20px; background: linear-gradient(135deg, #0e3a1a, #1e4620); border: 2px solid #66bb6a; border-radius: 14px; max-width: 340px; text-align:center;`;
+        infoBox.innerHTML = `
+          <div style="font-size:0.8rem; letter-spacing:2px; color:#a5d6a7; text-transform:uppercase; margin-bottom:10px;">${msg.winners.length > 1 ? t("payout.winner_label_many") : t("payout.winner_label_one")}</div>
+          <div style="font-size:1.15rem; font-weight:900; color:#f5c542; letter-spacing:1px;">${winnersNames}</div>
+          <div style="margin-top:12px; font-size:0.9rem; color:#a5d6a7;">${t("payout.waiting_pay")}</div>
+        `;
+        if (hint) {
+          content.insertBefore(infoBox, hint);
+          hint.textContent = t("payout.resume_when_paid");
+        } else {
+          content.appendChild(infoBox);
+        }
+      }
+
+      $("pauseOverlay").classList.add("active");
+      break;
+    }
+
+    case "payout_progress":
+      if (window.__awaitingPayout) {
+        window.__awaitingPayout.paid = msg.paid || 0;
+        window.__awaitingPayout.total = msg.total || 0;
+      }
+      if (msg.paid > 0 && !window.__payoutApplausePlayed) {
+        window.__payoutApplausePlayed = true;
+        playApplausePlayer();
+      }
+      break;
+
+    case "resume_countdown": {
+      window.__resumeCountdown = { seconds: msg.seconds, endsAt: msg.endsAt };
+      const po = $("pauseOverlay");
+      if (po && po.classList.contains("active")) {
+        const content = po.querySelector(".pause-content");
+        let cdBox = content.querySelector("#payoutCountdownBox");
+        if (!cdBox) {
+          cdBox = document.createElement("div");
+          cdBox.id = "payoutCountdownBox";
+          cdBox.style.cssText = `
+            margin: 20px auto; padding: 16px 24px;
+            background: linear-gradient(135deg, #3a2a10, #4a3010);
+            border: 2px solid #f5c542; border-radius: 14px;
+            max-width: 340px; text-align: center;
+          `;
+          const hint = content.querySelector(".pause-hint");
+          if (hint) content.insertBefore(cdBox, hint);
+          else content.appendChild(cdBox);
+        }
+        cdBox.innerHTML = `
+          <div style="font-size:0.8rem; color:#f5c542; letter-spacing:2px; font-weight:800; margin-bottom:6px;">${t("payout.resuming_in")}</div>
+          <div id="payoutCountdownNumber" style="font-size:2.8rem; font-weight:900; color:#fff; font-family:'Courier New', monospace; line-height:1;">${msg.seconds}</div>
+        `;
+        if (window.__payoutCountdownInterval) clearInterval(window.__payoutCountdownInterval);
+        let remaining = Number(msg.seconds) || 0;
+        window.__payoutCountdownInterval = setInterval(() => {
+          remaining--;
+          const el = document.getElementById("payoutCountdownNumber");
+          if (el) el.textContent = Math.max(0, remaining);
+          if (remaining <= 0) {
+            clearInterval(window.__payoutCountdownInterval);
+            window.__payoutCountdownInterval = null;
+          }
+        }, 1000);
+      }
+      break;
+    }
+
+    case "bar_name_changed":
+      updateBarName(msg.name);
+      break;
+
+    case "you_paid":
+      toast(t("toast.payment_ok"), "success");
+      break;
+
+    case "you_approved":
+      if (msg.sounds) soundConfig = { ...soundConfig, ...msg.sounds };
+      if (msg.unattendedMode) unattendedMode = msg.unattendedMode;
+      if (msg.barName) updateBarName(msg.barName);
+      unlockAudio();
+      stopWaitingTimer();
+      showScreen("approved");
+      setTimeout(() => {
+        if (unattendedMode === "free") {
+          showWaitingRoom();
+        } else {
+          renderEmptyCard();
+          showScreen("ready-wait");
+          $("gamePlayerName").textContent = myName;
+        }
+      }, 800);
+      break;
+
+    case "you_rejected":
+      joinedSuccessfully = false;
+      stopWaitingTimer();
+      $("kickedIcon").textContent = "❌";
+      $("kickedTitle").textContent = t("kicked.rejected_title");
+      $("kickedMessage").textContent = t("kicked.rejected_msg");
+      showScreen("kicked");
+      break;
+
+    case "you_left":
+      break;
+
+    case "you_kicked":
+      joinedSuccessfully = false;
+      stopWaitingTimer();
+      $("kickedIcon").textContent = "🚪";
+      $("kickedTitle").textContent = t("kicked.kicked_title");
+      $("kickedMessage").textContent = t("kicked.kicked_msg");
+      showScreen("kicked");
+      break;
+
+    case "you_banned":
+      joinedSuccessfully = false;
+      stopWaitingTimer();
+      $("kickedIcon").textContent = "🚫";
+      $("kickedTitle").textContent = t("kicked.banned_title");
+      $("kickedMessage").textContent = t("kicked.banned_msg");
+      showScreen("kicked");
+      break;
+
+    case "your_name_changed":
+      myName = msg.name;
+      if ($("gamePlayerName")) $("gamePlayerName").textContent = myName;
+      if ($("waitingName")) $("waitingName").textContent = myName;
+      if (waitingRoomState && waitingRoomState.players) {
+        waitingRoomState.players = waitingRoomState.players.map(p =>
+          p.name && p.name.toUpperCase() === myName.toUpperCase()
+            ? { ...p, name: msg.name }
+            : p
+        );
+        renderWaitingRoom();
+      }
+      toast(t("toast.name_changed", { name: msg.name }), "info");
+      break;
+
+    case "round_started":
+      cardLocked = false;
+      applyCardLock();
+      if (msg.barName) updateBarName(msg.barName);
+      window.__awaitingPayout = null;
+      window.__resumeCountdown = null;
+      if (msg.ballHistorySize != null) {
+        ballHistorySize = Math.max(2, Math.min(6, Number(msg.ballHistorySize) || 3));
+      }
+      if (window.__payoutCountdownInterval) {
+        clearInterval(window.__payoutCountdownInterval);
+        window.__payoutCountdownInterval = null;
+      }
+      {
+        const box = document.getElementById("payoutCountdownBox");
+        if (box) box.remove();
+      }
+      if (msg.sounds) soundConfig = { ...soundConfig, ...msg.sounds };
+      currentRound = msg.roundType;
+      if (msg.freeCells != null) {
+        myFreeCellsCount = Math.max(1, Math.min(5, Number(msg.freeCells) || 1));
+      }
+      startRoundTimer(Date.now(), 0);
+      window.__calledNumbers = new Set();
+      updateBallsCounter();
+
+      stopCountdownTick();
+      waitingRoomState.countdownActive = false;
+      waitingRoomState.iAmReady = false;
+      if ($("btnLine")) {
+        $("btnLine").disabled = true;
+        $("btnLine").classList.remove("btn-ready");
+        $("btnLine").textContent = "🥉 LINE!";
+      }
+      if ($("btnBingo")) {
+        $("btnBingo").disabled = true;
+        $("btnBingo").classList.remove("btn-ready");
+        $("btnBingo").textContent = "🥈 BINGO!";
+      }
+      hidePauseOverlay();
+      hideClaimWindow();
+      roundPrizes = { line: null, bingo: null };
+      myClaimedThisRound = { line: false, bingo: false };
+      myClaimPending = { line: false, bingo: false };
+      lastWinData = null;
+      ballHistory = [];
+      renderBallsRow();
+      renderPoolIcons();
+
+      if (msg.roundType === "practice") {
+        $("roundTag").textContent = "PRACTICE";
+        $("roundTag").className = "round-tag practice";
+        $("roundTag").style.display = "inline-block";
+      } else {
+        $("roundTag").style.display = "none";
+      }
+      if (msg.pool && msg.roundType === "real") {
+        poolValues.total = msg.pool.totalCollected;
+        poolValues.line = msg.pool.breakdown.line;
+        poolValues.bingo = msg.pool.breakdown.bingo;
+        $("poolInfo").classList.remove("hidden");
+        $("poolTotal").textContent = "€" + poolValues.total.toFixed(2);
+        renderPoolIcons();
+      } else {
+        $("poolInfo").classList.add("hidden");
+      }
+      if (msg.roundType === "practice") {
+        $("practiceBadge").classList.remove("hidden");
+        $("cardWrap").classList.add("practice");
+      } else {
+        $("practiceBadge").classList.add("hidden");
+        $("cardWrap").classList.remove("practice");
+      }
+      if ($("gamePlayerName")) $("gamePlayerName").textContent = myName;
+      showScreen("game");
+      highlightWinningCells();
+      if (soundConfig.applauseOnRoundStart) playApplausePlayer();
+      break;
+
+    case "your_cards":
+      if (msg.sounds) soundConfig = { ...soundConfig, ...msg.sounds };
+      if (msg.freeCells != null) {
+        myFreeCellsCount = Math.max(1, Math.min(10, Number(msg.freeCells) || 1));
+      }
+      if (msg.ballsPerColumn != null) {
+        window.__ballsPerColumn = Number(msg.ballsPerColumn);
+        if (msg.cards && msg.cards[0]) {
+          msg.cards[0].ballsPerColumn = window.__ballsPerColumn;
+        }
+      }
+      myCards = msg.cards;
+      myCardIndex = 0;
+      myCard = myCards[0] || null;
+      updateBallsCounter();
+      renderCard();
+      updateClaimButtons();
+      break;
+
+    case "ball_drawn":
+      lastBallNumber = msg.ball.number;
+      if (!window.__calledNumbers) window.__calledNumbers = new Set();
+      window.__calledNumbers.add(msg.ball.number);
+      ballHistory.push({ letter: msg.ball.letter, number: msg.ball.number });
+      updateBallsCounter();
+      if (ballHistory.length > 20) ballHistory.shift();
+      renderBallsRow();
+      playVoicePlayer(msg.ball.number);
+      highlightWinningCells();
+      autoClaimIfReady();
+      break;
+
+    case "mark_ok":
+      break;
+
+    case "mark_invalid":
+      toast(t("toast.mark_invalid", { msg: msg.message }), "warn");
+      break;
+
+    case "claim_sent":
+      toast(t("claim.sent_info", { claim: msg.claim.toUpperCase() }), "info");
+      break;
+
+    case "claim_rejected":
+      toast(t("claim.rejected", { reason: msg.reason }), "warn", 4000);
+      if (!/already claimed/i.test(msg.reason || "")) {
+        myClaimPending.line = false;
+        myClaimPending.bingo = false;
+        updateClaimButtons();
+      }
+      break;
+
+    case "winner_announcement":
+      myClaimPending.line = false;
+      myClaimPending.bingo = false;
+      handleWinnerAnnouncement(msg);
+      updateClaimButtons();
+      if (msg.claim === "bingo") playBingoPlayer();
+      if (msg.claim === "line") playLineaPlayer();
+      break;
+
+    case "claim_closed":
+      handleClaimClosed(msg);
+      break;
+
+    case "claim_window_opened":
+      showClaimWindow(msg.claim, msg.seconds, msg.lastBall, msg.eligibleIds, msg.claimerName);
+      break;
+
+    case "claim_window_closed":
+      hideClaimWindow();
+      myClaimPending.line = false;
+      myClaimPending.bingo = false;
+      handleClaimWindowClosed(msg);
+      if (msg.claim === "bingo") playBingoPlayer();
+      if (msg.claim === "line") playLineaPlayer();
+      const iWonThisRound = (msg.winners || []).some(w => w.name && w.name.toUpperCase() === myName.toUpperCase());
+      if (!iWonThisRound) lastWinData = null;
+      updateClaimButtons();
+      document.querySelectorAll(".card-cell.winning-line, .card-cell.winning-bingo").forEach(c => {
+        c.classList.remove("winning-line", "winning-bingo");
+      });
+      const crb = $("claimReadyBanner");
+      if (crb) crb.classList.remove("active", "line", "bingo");
+      break;
+
+    case "you_won":
+      lastWinData = {
+        claim: msg.claim,
+        amount: msg.amount,
+        code: msg.code,
+        roundNumber: msg.roundNumber,
+        timestamp: msg.timestamp
+      };
+      handleYouWon(msg);
+      if (msg.claim === "bingo") playBingoPlayer();
+      if (msg.claim === "line") playLineaPlayer();
+      break;
+
+    case "awaiting_ready":
+      readyState.awaiting = true;
+      readyState.ready = 0;
+      readyState.total = msg.total || 0;
+      readyState.iAmReady = false;
+      renderReadyButton();
+      break;
+
+    case "ready_progress":
+      readyState.ready = msg.ready || 0;
+      readyState.total = msg.total || 0;
+      renderReadyButton();
+      break;
+
+    case "round_status":
+      if (msg.status === "paused") {
+        pauseRoundTimer();
+        if (msg.reason && msg.reason.endsWith("_resolved_waiting_resume") && msg.winners) {
+          showPauseOverlay(
+            t("pause.waiting_resume"),
+            {
+              claim: msg.resolvedClaim,
+              winners: msg.winners,
+              perWinner: msg.perWinner,
+              totalPrize: msg.totalPrize,
+              shared: msg.shared
+            }
+          );
+        } else if (!msg.reason || (msg.reason !== "line" && msg.reason !== "bingo")) {
+          showPauseOverlay(t("pause.paused_by_host"));
+        }
+      } else if (msg.status === "playing") {
+        hidePauseOverlay();
+        resumeRoundTimer();
+        readyState.awaiting = false;
+        readyState.iAmReady = false;
+        readyState.ready = 0;
+        const readyEl = document.getElementById("readyBox");
+        if (readyEl) readyEl.remove();
+        if (msg.reason === "line_resolved" || msg.reason === "bingo_resolved") {
+          myClaimPending.line = false;
+          myClaimPending.bingo = false;
+          updateClaimButtons();
+          if (msg.valid) {
+            if (msg.message) toast(msg.message, "success", 4000);
+          } else {
+            toast(t("toast.claim_rejected_generic"), "warn", 4000);
+          }
+        } else if (msg.reason === "manual") {
+          toast(t("toast.round_resumed"), "info");
+        }
+      }
+      break;
+
+    case "round_ended":
+      hidePauseOverlay();
+      hideClaimWindow();
+      freezeRoundTimer();
+      cardLocked = true;
+      applyCardLock();
+      window.__remainingBalls = msg.round?.remainingBalls || [];
+      stopRoundUI(msg);
+      break;
+
+    case "new_round_preparing":
+      hidePauseOverlay();
+      hideClaimWindow();
+      resetForNewRound();
+      break;
+
+    case "sounds_config_changed":
+      if (msg.sounds) {
+        soundConfig = { ...soundConfig, ...msg.sounds };
+        if (soundConfig.playOnPlayers) unlockAudio();
+      }
+      break;
+
+    case "ball_history_size_changed": {
+      ballHistorySize = Math.max(2, Math.min(6, Number(msg.size) || 3));
+      renderBallsRow();
+      break;
+    }
+
+    case "force_close_modal": {
+      const overlay = $("confirmOverlay");
+      if (overlay.classList.contains("active")) overlay.classList.remove("active");
+      if (modalOpenSent && ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({ type: "player_modal_close" }));
+      }
+      modalOpenSent = false;
+      myClaimPending.line = false;
+      myClaimPending.bingo = false;
+      updateClaimButtons();
+      break;
+    }
+  }
+}
+
+function handleWinnerAnnouncement(msg) {
+  if (msg.claim === "line") {
+    myClaimedThisRound.line = true;
+    if (!roundPrizes.line) {
+      roundPrizes.line = {
+        winners: [{ name: msg.playerName, amount: msg.amount }],
+        perWinner: msg.amount,
+        totalPrize: msg.amount,
+        iWon: msg.playerName === myName,
+        shared: false
+      };
+    }
+    if ($("btnLine")) {
+      $("btnLine").disabled = true;
+      $("btnLine").classList.remove("btn-ready");
+      $("btnLine").textContent = "🥉 LINE ✓";
+    }
+    if (!roundPrizes.line.iWon) {
+      toast(t("toast.other_won", { name: msg.playerName, claim: t("game.line"), amount: msg.amount.toFixed(2) }), "success");
+    }
+    renderPoolIcons();
+  } else if (msg.claim === "bingo") {
+    myClaimedThisRound.bingo = true;
+    myClaimedThisRound.line = true;
+    if (!roundPrizes.bingo) {
+      roundPrizes.bingo = {
+        winners: [{ name: msg.playerName, amount: msg.amount }],
+        perWinner: msg.amount,
+        totalPrize: msg.amount,
+        iWon: msg.playerName === myName,
+        shared: false
+      };
+    }
+    if ($("btnLine")) { $("btnLine").disabled = true; $("btnLine").classList.remove("btn-ready"); }
+    if ($("btnBingo")) {
+      $("btnBingo").disabled = true;
+      $("btnBingo").classList.remove("btn-ready");
+      $("btnBingo").textContent = "🥈 BINGO ✓";
+    }
+    if (!roundPrizes.bingo.iWon) {
+      toast(t("toast.other_won_bingo", { name: msg.playerName, amount: msg.amount.toFixed(2) }), "success");
+    }
+    renderPoolIcons();
+  }
+}
+
+function handleClaimClosed(msg) {
+  if (msg.claim === "line") {
+    if ($("btnLine")) {
+      $("btnLine").disabled = true;
+      $("btnLine").classList.remove("btn-ready");
+      $("btnLine").textContent = "🥉 LINE ✓";
+    }
+  }
+}
+
+function handleClaimWindowClosed(msg) {
+  const claim = msg.claim;
+  const winners = msg.winners || [];
+  const winnerNames = winners.map(w => w.name);
+  const iWon = winnerNames.includes(myName);
+  const shared = winners.length > 1;
+
+  roundPrizes[claim] = {
+    winners: winners.map(w => ({ name: w.name, amount: msg.perWinner })),
+    perWinner: msg.perWinner,
+    totalPrize: msg.totalPrize,
+    iWon,
+    shared
+  };
+
+  if (iWon) {
+    toast(
+      t("toast.won_claim", {
+        claim: claim === "line" ? t("game.line") : t("game.bingo"),
+        amount: msg.perWinner.toFixed(2),
+        shared: shared ? t("toast.shared_suffix") : ""
+      }),
+      "success", 6000
+    );
+  }
+
+  if (claim === "line") {
+    if ($("btnLine")) {
+      $("btnLine").disabled = true;
+      $("btnLine").classList.remove("btn-ready");
+      $("btnLine").textContent = "🥉 LINE ✓";
+    }
+  } else if (claim === "bingo") {
+    if ($("btnLine")) { $("btnLine").disabled = true; $("btnLine").classList.remove("btn-ready"); }
+    if ($("btnBingo")) {
+      $("btnBingo").disabled = true;
+      $("btnBingo").classList.remove("btn-ready");
+      $("btnBingo").textContent = "🥈 BINGO ✓";
+    }
+  }
+
+  renderPoolIcons();
+}
+
+function handleYouWon(msg) {
+  if (msg.claim === "line") {
+    if ($("btnLine")) {
+      $("btnLine").disabled = true;
+      $("btnLine").classList.remove("btn-ready");
+      $("btnLine").textContent = "🥉 LINE ✓";
+    }
+  } else if (msg.claim === "bingo") {
+    if ($("btnLine")) { $("btnLine").disabled = true; $("btnLine").classList.remove("btn-ready"); }
+    if ($("btnBingo")) {
+      $("btnBingo").disabled = true;
+      $("btnBingo").classList.remove("btn-ready");
+      $("btnBingo").textContent = "🥈 BINGO ✓";
+    }
+  }
+}
+
+function restoreRoundPrizes(winners) {
+  roundPrizes = { line: null, bingo: null };
+  ["line", "bingo"].forEach(claim => {
+    const w = winners[claim];
+    if (!w) return;
+    let winnerList = [];
+    let perWinner = w.amount || 0;
+    let shared = false;
+    if (w.shared && w.winners && w.winners.length > 0) {
+      winnerList = w.winners.map(x => ({ name: x.playerName, amount: x.amount }));
+      perWinner = w.perWinner || w.winners[0].amount;
+      shared = w.winners.length > 1;
+    } else if (w.playerName) {
+      winnerList = [{ name: w.playerName, amount: w.amount }];
+    }
+    const winnerNames = winnerList.map(x => x.name);
+    const iWon = winnerNames.includes(myName);
+    roundPrizes[claim] = {
+      winners: winnerList,
+      perWinner,
+      totalPrize: w.amount || perWinner,
+      iWon,
+      shared
+    };
+  });
+  renderPoolIcons();
+}
+
+function renderPoolIcons() {
+  const lineItem = $("prizeLineItem");
+  const iconLine = $("iconLine");
+  const poolLine = $("poolLine");
+
+  lineItem.classList.remove("won-by-me", "won-by-other");
+
+  if (!roundPrizes.line) {
+    iconLine.innerHTML = iconLineHtml();
+    poolLine.textContent = "€" + poolValues.line.toFixed(2);
+  } else if (roundPrizes.line.iWon) {
+    lineItem.classList.add("won-by-me");
+    iconLine.innerHTML = iconLineHtml("won");
+    poolLine.textContent = "€" + roundPrizes.line.perWinner.toFixed(2);
+  } else {
+    lineItem.classList.add("won-by-other");
+    iconLine.innerHTML = iconLineHtml("locked");
+    poolLine.textContent = "€" + poolValues.line.toFixed(2);
+  }
+
+  const bingoItem = $("prizeBingoItem");
+  const iconBingo = $("iconBingo");
+  const poolBingo = $("poolBingo");
+
+  bingoItem.classList.remove("won-by-me", "won-by-other");
+
+  if (!roundPrizes.bingo) {
+    iconBingo.innerHTML = iconBingoHtml();
+    poolBingo.textContent = "€" + poolValues.bingo.toFixed(2);
+  } else if (roundPrizes.bingo.iWon) {
+    bingoItem.classList.add("won-by-me");
+    iconBingo.innerHTML = iconBingoHtml("won");
+    poolBingo.textContent = "€" + roundPrizes.bingo.perWinner.toFixed(2);
+  } else {
+    bingoItem.classList.add("won-by-other");
+    iconBingo.innerHTML = iconBingoHtml("locked");
+    poolBingo.textContent = "€" + poolValues.bingo.toFixed(2);
+  }
+}
+
+function stopRoundUI(msg) {
+  const winners = msg.round?.winners || {};
+  const line = winners.line;
+  const bingo = winners.bingo;
+
+  function renderPrize(icon, label, w) {
+    if (!w) {
+      return `
+        <div style="background:#0a1424; border:2px dashed #2a4a72; border-radius:12px; padding:14px; margin-bottom:12px; text-align:center; color:#5a7a9e; font-style:italic;">
+          ${t("end.no_winner", { icon, label })}
+        </div>`;
+    }
+    const names = (w.shared && w.winners && w.winners.length)
+      ? w.winners.map(x => x.playerName).join(", ")
+      : (w.playerName || "—");
+    const amount = w.shared ? w.perWinner : (w.amount || 0);
+    const total = w.amount || 0;
+    const extra = w.shared
+      ? `<div style="font-size:0.8rem; color:#90a4c4; margin-top:6px;">${t("end.shared", { amount: total.toFixed(2) })}</div>`
+      : "";
+    return `
+      <div style="background:linear-gradient(135deg,#0e3a1a,#1e4620); border:2px solid #66bb6a; border-radius:12px; padding:14px 18px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <div style="text-align:left;">
+            <div style="font-size:1rem; color:#66bb6a; font-weight:800; letter-spacing:1px;">${icon} ${label}</div>
+            <div style="font-size:1.05rem; color:#fff; font-weight:700; margin-top:4px;">${names}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1.6rem; font-weight:900; color:#f5c542; font-family:'Courier New',monospace;">
+              €${amount.toFixed(2)}
+            </div>
+          </div>
+        </div>
+        ${extra}
+      </div>`;
+  }
+
+  let html = "";
+  html += renderPrize("🥉", t("game.line").toUpperCase(), line);
+  html += renderPrize("🥈", t("game.bingo").toUpperCase(), bingo);
+
+  $("roundEndSummary").innerHTML = html;
+  $("roundEndActions").style.display = "block";
+  $("roundEndCardView").style.display = "none";
+  showScreen("round-end");
+}
+
+function resetForNewRound() {
+  cardLocked = false;
+  applyCardLock();
+  resetRoundTimer();
+  myCards = [];
+  myCard = null;
+  currentRound = null;
+  window.__calledNumbers = new Set();
+  myClaimedThisRound = { line: false, bingo: false };
+  myClaimPending = { line: false, bingo: false };
+  roundPrizes = { line: null, bingo: null };
+  lastWinData = null;
+  poolValues = { total: 0, line: 0, bingo: 0 };
+  ballHistory = [];
+  modalOpenSent = false;
+  waitingRoomState.iAmReady = false;
+  waitingRoomState.countdownActive = false;
+  waitingRoomState.secondsLeft = 0;
+  stopCountdownTick();
+
+  $("bingoCard").innerHTML = "";
+  $("roundTag").style.display = "none";
+  renderBallsRow();
+  if ($("btnLine")) {
+    $("btnLine").disabled = true;
+    $("btnLine").classList.remove("btn-ready");
+    $("btnLine").textContent = t("claim.line");
+  }
+  if ($("btnBingo")) {
+    $("btnBingo").disabled = true;
+    $("btnBingo").classList.remove("btn-ready");
+    $("btnBingo").textContent = t("claim.bingo");
+  }
+  renderPoolIcons();
+  highlightWinningCells();
+
+  if (unattendedMode === "free") {
+    waitingRoomState.iAmReady = false;
+    waitingRoomState.ready = 0;
+    showWaitingRoom();
+  } else {
+    startWaitingTimer();
+    showScreen("waiting");
+    $("waitingName").textContent = myName;
+    $("waitingCode").textContent = myCode;
+  }
+}
+
+function showWaitingRoom() {
+  ballHistory = [];
+  window.__calledNumbers = new Set();
+  poolValues = { total: 0, line: 0, bingo: 0 };
+  roundPrizes = { line: null, bingo: null };
+  lastBallNumber = null;
+  renderBallsRow();
+  renderPoolIcons();
+  updateBallsCounter();
+  showScreen("waiting-room");
+  renderWaitingRoom();
+}
+
+function renderEmptyCard() {
+  const c = $("readyWaitCard");
+  if (!c) return;
+  c.innerHTML = "";
+  const letters = ["B", "I", "N", "G", "O"];
+  const classes = ["b", "i", "n", "g", "o"];
+  letters.forEach((l, i) => {
+    const h = document.createElement("div");
+    h.className = "card-header " + classes[i];
+    h.textContent = l;
+    c.appendChild(h);
+  });
+  for (let r = 0; r < 4; r++) {
+    for (let col = 0; col < 5; col++) {
+      const cell = document.createElement("div");
+      cell.className = "card-cell";
+      cell.style.background = "#16253d";
+      cell.style.borderStyle = "dashed";
+      cell.style.borderColor = "#2a4a72";
+      cell.style.color = "#64b5f6";
+      cell.style.fontSize = "clamp(1.1rem, 3.5vw, 1.5rem)";
+      cell.style.fontWeight = "900";
+      cell.textContent = "?";
+      c.appendChild(cell);
+    }
+  }
+}
+
+function renderWaitingRoom() {
+  if (!waitingRoomState) return;
+  const ready = waitingRoomState.ready || 0;
+  const total = waitingRoomState.total || 0;
+  const pct = total > 0 ? (ready / total) : 0;
+
+  const circle = $("wrCircleFg");
+  if (circle) {
+    const circumference = 326.7;
+    circle.style.strokeDashoffset = String(circumference * (1 - pct));
+    circle.style.stroke = (total > 0 && ready === total) ? "#66bb6a" : "#43a047";
+  }
+  const numbers = $("wrProgressNumbers");
+  if (numbers) numbers.textContent = `${ready}/${total}`;
+
+  const cd = $("wrCountdown");
+  const cdNum = $("wrCountdownNumber");
+  if (waitingRoomState.countdownActive && waitingRoomState.secondsLeft > 0) {
+    if (cd) cd.style.display = "block";
+    if (cdNum) cdNum.textContent = waitingRoomState.secondsLeft;
+  } else {
+    if (cd) cd.style.display = "none";
+  }
+
+  const btn = $("wrReadyBtn");
+  const doneBox = $("wrReadyDone");
+  if (waitingRoomState.iAmReady) {
+    if (btn) btn.style.display = "none";
+    if (doneBox) doneBox.style.display = "block";
+  } else {
+    if (btn) {
+      btn.style.display = "inline-block";
+      btn.disabled = false;
+      btn.textContent = t("wr.ready_btn");
+    }
+    if (doneBox) doneBox.style.display = "none";
+  }
+
+  const playersEl = $("wrPlayers");
+  if (playersEl) {
+    const players = waitingRoomState.players || [];
+    playersEl.innerHTML = players.map(p => {
+      const isMe = p.name && p.name.toUpperCase() === myName.toUpperCase();
+      const cls = ["wr-player-chip", p.ready ? "ready" : "", isMe ? "me" : ""].filter(Boolean).join(" ");
+      const icon = p.ready ? "✅" : "⏳";
+      return `<div class="${cls}"><span class="chip-icon">${icon}</span>${escHtml(p.name)}</div>`;
+    }).join("");
+  }
+}
+
+function startCountdownTick(initialSeconds) {
+  stopCountdownTick();
+  let remaining = Math.max(0, Number(initialSeconds) || 0);
+  waitingRoomState.secondsLeft = remaining;
+  countdownInterval = setInterval(() => {
+    remaining--;
+    waitingRoomState.secondsLeft = Math.max(0, remaining);
+    renderWaitingRoom();
+    if (remaining <= 0) stopCountdownTick();
+  }, 1000);
+}
+
+function stopCountdownTick() {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+}
+
+function sendReady() {
+  if (waitingRoomState.iAmReady) return;
+  waitingRoomState.iAmReady = true;
+  renderWaitingRoom();
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ type: "player_ready_for_next_round" }));
+  }
+}
+
+function escHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function startWaitingTimer() {
+  waitingStartTime = Date.now();
+  if (waitingTimerInterval) clearInterval(waitingTimerInterval);
+  waitingTimerInterval = null;
+}
+
+function stopWaitingTimer() {
+  if (waitingTimerInterval) {
+    clearInterval(waitingTimerInterval);
+    waitingTimerInterval = null;
+  }
+}
+
+function applyCardLock() {
+  if (cardLocked) {
+    $("cardWrap").classList.add("locked");
+    $("lockedActions").style.display = "block";
+    if ($("btnLine")) { $("btnLine").disabled = true; $("btnLine").classList.remove("btn-ready"); }
+    if ($("btnBingo")) { $("btnBingo").disabled = true; $("btnBingo").classList.remove("btn-ready"); }
+  } else {
+    $("cardWrap").classList.remove("locked");
+    $("lockedActions").style.display = "none";
+  }
+}
+
+function renderCard() {
+  if (!myCard) return;
+  const c = $("bingoCard");
+  c.innerHTML = "";
+  const letters = ["B", "I", "N", "G", "O"];
+  const classes = ["b", "i", "n", "g", "o"];
+  letters.forEach((l, i) => {
+    const h = document.createElement("div");
+    h.className = "card-header " + classes[i];
+    h.textContent = l;
+    c.appendChild(h);
+  });
+  for (let r = 0; r < myCard.numbers.length; r++) {
+    for (let col = 0; col < myCard.numbers[r].length; col++) {
+      const v = myCard.numbers[r][col];
+      const cell = document.createElement("div");
+      cell.className = "card-cell";
+      cell.dataset.row = r;
+      cell.dataset.col = col;
+      if (v === "FREE") {
+        cell.classList.add("free");
+        cell.textContent = "FREE";
+      } else {
+        cell.textContent = v;
+        cell.onclick = () => tapCell(r, col);
+      }
+      if (myCard.marked[r][col]) cell.classList.add("marked");
+      c.appendChild(cell);
+    }
+  }
+  updateClaimButtons();
+}
+
+function highlightWinningCells() {
+  document.querySelectorAll(".card-cell.winning-line, .card-cell.winning-bingo").forEach(c => {
+    c.classList.remove("winning-line", "winning-bingo");
+  });
+
+  const banner = $("claimReadyBanner");
+  if (!banner) return;
+
+  if (!myCard) {
+    banner.classList.remove("active", "line", "bingo");
+    return;
+  }
+
+  const isClaimWindowOpen = $("claimWindowOverlay").classList.contains("active");
+  const hasBingo = detectBingo();
+  const hasLine = detectLine();
+
+  if (hasBingo && !myClaimedThisRound.bingo && !isClaimWindowOpen) {
+    document.querySelectorAll(".card-cell").forEach(c => c.classList.add("winning-bingo"));
+    banner.textContent = t("claim.has_bingo");
+    banner.classList.add("active");
+    banner.classList.remove("line");
+    banner.classList.add("bingo");
+    return;
+  }
+
+  if (hasLine && !myClaimedThisRound.line && !isClaimWindowOpen) {
+    const m = myCard.marked;
+    for (let r = 0; r < m.length; r++) {
+      if (m[r].every(v => v)) {
+        for (let c = 0; c < m[r].length; c++) {
+          const cell = document.querySelector(`.card-cell[data-row="${r}"][data-col="${c}"]`);
+          if (cell) cell.classList.add("winning-line");
+        }
+      }
+    }
+    banner.textContent = t("claim.has_line");
+    banner.classList.add("active");
+    banner.classList.remove("bingo");
+    banner.classList.add("line");
+    return;
+  }
+
+  banner.classList.remove("active", "line", "bingo");
+}
+
+function autoClaimIfReady() {
+  if (!myCard) return;
+  if (!currentRound || currentRound === "practice") return;
+  if (cardLocked) return;
+
+  const hasBingo = myCard.marked.every(row => row.every(v => v));
+  const hasLine = detectLine();
+
+  if (hasBingo && !myClaimPending.bingo) {
+    myClaimedThisRound.bingo = true;
+    myClaimPending.bingo = true;
+    if (ws && ws.readyState === 1) {
+      ws.send(JSON.stringify({ type: "player_claim_bingo" }));
+    }
+    return;
+  }
+
+  if (hasLine && !myClaimPending.line) {
+    myClaimedThisRound.line = true;
+    myClaimPending.line = true;
+    if (ws && ws.readyState === 1) {
+      ws.send(JSON.stringify({ type: "player_claim_line" }));
+    }
+    return;
+  }
+}
+
+function tapCell(row, col) {
+  if (!myCard || cardLocked) return;
+  if (myCard.marked[row][col]) return;
+  const v = myCard.numbers[row][col];
+  if (v === "FREE") return;
+  const cell = document.querySelector(`.card-cell[data-row="${row}"][data-col="${col}"]`);
+  const calledNumbers = window.__calledNumbers || new Set();
+  if (!calledNumbers.has(v)) {
+    if (cell) {
+      cell.classList.remove("flash-wrong");
+      void cell.offsetWidth;
+      cell.classList.add("flash-wrong");
+      setTimeout(() => cell.classList.remove("flash-wrong"), 450);
+    }
+    return;
+  }
+  ws.send(JSON.stringify({ type: "player_mark", cardIndex: myCardIndex, row, col }));
+  myCard.marked[row][col] = true;
+  if (cell) {
+    cell.classList.add("marked", "pulse");
+    setTimeout(() => cell.classList.remove("pulse"), 800);
+  }
+  updateClaimButtons();
+
+  const hasBingoNow = detectBingo();
+  const hasLineNow = detectLine();
+
+  if (hasBingoNow && !myClaimPending.bingo) {
+    myClaimedThisRound.bingo = true;
+    myClaimPending.bingo = true;
+    ws.send(JSON.stringify({ type: "player_claim_bingo" }));
+    updateClaimButtons();
+  } else if (hasLineNow && !myClaimPending.line) {
+    myClaimedThisRound.line = true;
+    myClaimPending.line = true;
+    ws.send(JSON.stringify({ type: "player_claim_line" }));
+    updateClaimButtons();
+  }
+}
+
+function detectLine() {
+  if (!myCard) return false;
+  const m = myCard.marked;
+  for (let r = 0; r < m.length; r++) {
+    if (m[r].every(v => v)) return true;
+  }
+  return false;
+}
+
+function detectBingo() {
+  if (!myCard) return false;
+  return myCard.marked.every(row => row.every(v => v));
+}
+
+function updateClaimButtons() {
+  const btnLine = $("btnLine");
+  const btnBingo = $("btnBingo");
+  if (!btnLine || !btnBingo) return;
+
+  if (!myCard) {
+    btnLine.disabled = true;
+    btnBingo.disabled = true;
+    btnLine.classList.remove("btn-ready");
+    btnBingo.classList.remove("btn-ready");
+    return;
+  }
+
+  const isClaimWindowOpen = $("claimWindowOverlay").classList.contains("active");
+  const hasPending = myClaimPending.line || myClaimPending.bingo;
+
+  if (hasPending && !isClaimWindowOpen) {
+    btnLine.disabled = true;
+    btnLine.classList.remove("btn-ready");
+    if (myClaimPending.line) btnLine.textContent = "🥉 LINE ⏳";
+
+    btnBingo.disabled = true;
+    btnBingo.classList.remove("btn-ready");
+    if (myClaimPending.bingo) btnBingo.textContent = "🥈 BINGO ⏳";
+    return;
+  }
+
+  if (btnBingo.textContent.includes("✓") && !isClaimWindowOpen) {
+    btnLine.disabled = true;
+    btnLine.classList.remove("btn-ready");
+    return;
+  }
+
+  const hasBingo = detectBingo();
+  const hasLine = detectLine();
+
+  btnBingo.disabled = !hasBingo;
+  btnBingo.classList.toggle("btn-ready", hasBingo);
+
+  if (btnLine.textContent.includes("✓")) {
+    btnLine.disabled = true;
+    btnLine.classList.remove("btn-ready");
+  } else {
+    btnLine.disabled = !hasLine;
+    btnLine.classList.toggle("btn-ready", hasLine);
+  }
+}
+
+const btnShowCard = $("btnShowCard");
+if (btnShowCard) {
+  btnShowCard.onclick = () => {
+    const container = $("roundEndCardContainer");
+    container.innerHTML = "";
+    if (myCard) {
+      const wrap = document.createElement("div");
+      wrap.className = "card-wrap";
+      wrap.style.marginBottom = "0";
+      const card = document.createElement("div");
+      card.className = "bingo-card";
+      wrap.appendChild(card);
+      container.appendChild(wrap);
+      const letters = ["B", "I", "N", "G", "O"];
+      const classes = ["b", "i", "n", "g", "o"];
+      letters.forEach((l, i) => {
+        const h = document.createElement("div");
+        h.className = "card-header " + classes[i];
+        h.textContent = l;
+        card.appendChild(h);
+      });
+      for (let r = 0; r < myCard.numbers.length; r++) {
+        for (let col = 0; col < myCard.numbers[r].length; col++) {
+          const v = myCard.numbers[r][col];
+          const cell = document.createElement("div");
+          cell.className = "card-cell";
+          if (v === "FREE") {
+            cell.classList.add("free");
+            cell.textContent = "FREE";
+          } else {
+            cell.textContent = v;
+            if (myCard.marked[r][col]) cell.classList.add("marked");
+          }
+          card.appendChild(cell);
+        }
+      }
+    }
+    $("roundEndActions").style.display = "none";
+    $("roundEndCardView").style.display = "block";
+
+    const rbc = $("remainingBallsContainer");
+    const remaining = window.__remainingBalls || [];
+    if (rbc) {
+      if (remaining.length > 0) {
+        let html = `<div style="font-size:0.85rem; color:#90a4c4; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; font-weight:700; text-align:center;">🎱 Bolas sin salir (${remaining.length})</div>`;
+        html += `<div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">`;
+        const colors = {
+          B: "linear-gradient(135deg, #1976d2, #0d47a1)",
+          I: "linear-gradient(135deg, #2e7d32, #1b5e20)",
+          N: "linear-gradient(135deg, #ef6c00, #e65100)",
+          G: "linear-gradient(135deg, #7b1fa2, #4a148c)",
+          O: "linear-gradient(135deg, #c62828, #b71c1c)"
+        };
+        remaining.forEach(b => {
+          const bg = colors[b.letter] || "linear-gradient(135deg, #455a64, #263238)";
+          html += `
+            <div style="width:42px; height:42px; border-radius:50%; background:${bg}; border:2px solid rgba(255,255,255,0.2); box-shadow:0 4px 10px rgba(0,0,0,0.4), inset 0 -2px 6px rgba(0,0,0,0.3), inset 0 2px 6px rgba(255,255,255,0.3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff;">
+              <span style="font-size:0.55rem; font-weight:900; opacity:0.8; line-height:1; margin-bottom:1px;">${b.letter}</span>
+              <span style="font-size:1.1rem; font-weight:900; line-height:1; text-shadow:0 1px 2px rgba(0,0,0,0.5);">${b.number}</span>
+            </div>`;
+        });
+        html += `</div>`;
+        rbc.innerHTML = html;
+        rbc.style.display = "block";
+      } else {
+        rbc.style.display = "none";
+      }
+    }
+  };
+}
+
+const btnPlayAgain = $("btnPlayAgain");
+if (btnPlayAgain) {
+  btnPlayAgain.onclick = () => {
+    cardLocked = false;
+    applyCardLock();
+    resetForNewRound();
+  };
+}
+
+const btnLeaveRoundEnd2 = $("btnLeaveRoundEnd2");
+if (btnLeaveRoundEnd2) {
+  btnLeaveRoundEnd2.onclick = () => {
+    showConfirm({
+      icon: "🚪",
+      title: t("end.leave_confirm_title"),
+      message: t("end.leave_confirm_msg"),
+      onYes: leaveGame
+    });
+  };
+}
+
+const btnPlayAgainFromCard2 = $("btnPlayAgainFromCard2");
+if (btnPlayAgainFromCard2) {
+  btnPlayAgainFromCard2.onclick = () => {
+    cardLocked = false;
+    applyCardLock();
+    resetForNewRound();
+  };
+}
+
+const btnLeaveFromCard2 = $("btnLeaveFromCard2");
+if (btnLeaveFromCard2) {
+  btnLeaveFromCard2.onclick = () => {
+    showConfirm({
+      icon: "🚪",
+      title: t("end.leave_confirm_title"),
+      message: t("end.leave_confirm_msg"),
+      onYes: leaveGame
+    });
+  };
+}
+
+$("btnLine").onclick = () => {
+  if (!currentRound || currentRound === "practice") {
+    toast(t("claim.practice"), "warn");
+    return;
+  }
+  myClaimedThisRound.line = true;
+  myClaimPending.line = true;
+  updateClaimButtons();
+  ws.send(JSON.stringify({ type: "player_claim_line" }));
+  toast(t("claim.line_sent"), "info", 2000);
+};
+
+$("btnBingo").onclick = () => {
+  if (!currentRound || currentRound === "practice") {
+    toast(t("claim.practice"), "warn");
+    return;
+  }
+  myClaimedThisRound.bingo = true;
+  myClaimPending.bingo = true;
+  updateClaimButtons();
+  ws.send(JSON.stringify({ type: "player_claim_bingo" }));
+  toast(t("claim.bingo_sent"), "info", 2000);
+};
+
+function showPauseOverlay(message, winnerInfo = null, customIcon = "⏸️") {
+  $("pauseMessage").textContent = message;
+
+  const content = document.querySelector(".pause-content");
+  const existingWinnerBox = document.getElementById("pauseWinnerBox");
+  if (existingWinnerBox) existingWinnerBox.remove();
+
+  if (winnerInfo && winnerInfo.winners && winnerInfo.winners.length > 0) {
+    $("pauseIcon").textContent = winnerInfo.claim === "bingo" ? "🏆" : "🥉";
+    $("pauseTitle").textContent = winnerInfo.claim === "bingo" ? "BINGO!" : "¡" + t("game.line").toUpperCase() + "!";
+
+    const box = document.createElement("div");
+    box.id = "pauseWinnerBox";
+    box.style.cssText = `
+      margin: 20px auto;
+      padding: 18px 20px;
+      background: linear-gradient(135deg, #0e3a1a, #1e4620);
+      border: 2px solid #66bb6a;
+      border-radius: 14px;
+      max-width: 340px;
+      box-shadow: 0 0 25px rgba(102, 187, 106, 0.4);
+    `;
+
+    const title = document.createElement("div");
+    title.style.cssText = "font-size:0.8rem; letter-spacing:2px; color:#a5d6a7; text-transform:uppercase; margin-bottom:10px;";
+    title.textContent = winnerInfo.shared ? t("pause.winners") : t("pause.winner");
+    box.appendChild(title);
+
+    winnerInfo.winners.forEach(w => {
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(102,187,106,0.3);";
+      const isMe = w.playerName.toUpperCase() === myName.toUpperCase();
+      row.innerHTML = `
+        <span style="font-weight:800; color:${isMe ? "#f5c542" : "#fff"}; font-size:1.1rem;">
+          ${isMe ? "👑 " : ""}${w.playerName}
+        </span>
+        <span style="font-weight:900; color:#f5c542; font-family:'Courier New', monospace; font-size:1.2rem;">
+          €${(w.amount ?? winnerInfo.perWinner).toFixed(2)}
+        </span>
+      `;
+      box.appendChild(row);
+    });
+
+    if (winnerInfo.shared && winnerInfo.totalPrize) {
+      const footer = document.createElement("div");
+      footer.style.cssText = "margin-top:10px; font-size:0.8rem; color:#90a4c4; text-align:center;";
+      footer.textContent = t("pause.prize_total", { amount: winnerInfo.totalPrize.toFixed(2) });
+      box.appendChild(footer);
+    }
+
+    const iWon = winnerInfo.winners.some(w => w.playerName.toUpperCase() === myName.toUpperCase());
+    if (iWon && lastWinData && lastWinData.code) {
+      const comp = document.createElement("div");
+      comp.style.cssText = `
+        margin: 16px auto 0; padding: 12px 16px;
+        background: #0a1424; border: 2px dashed #f5c542;
+        border-radius: 10px; max-width: 340px; text-align: center;
+      `;
+      const time = lastWinData.timestamp
+        ? new Date(lastWinData.timestamp).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })
+        : "";
+      comp.innerHTML = `
+        <div style="font-size:0.75rem; color:#90a4c4; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px;">🎫 Comprobante de premio</div>
+        <div style="font-size:0.85rem; color:#90a4c4; margin-bottom:8px;">Ronda #${lastWinData.roundNumber || "?"} · ${time}</div>
+        <div style="font-size:1.4rem; font-weight:900; color:#f5c542; font-family:'Courier New', monospace; letter-spacing:3px;">${lastWinData.code}</div>
+        <div style="font-size:0.75rem; color:#a5d6a7; margin-top:8px;">🎫 Muestra este comprobante al host para recibir tu premio</div>
+      `;
+      box.appendChild(comp);
+    }
+
+    const hint = content.querySelector(".pause-hint");
+    if (hint) {
+      content.insertBefore(box, hint);
+      hint.textContent = t("pause.wait_host");
+      hint.classList.remove("pause-dots");
+    } else {
+      content.appendChild(box);
+    }
+  } else {
+    $("pauseIcon").textContent = customIcon || "⏸️";
+    $("pauseTitle").textContent = t("pause.title");
+    const hint = content.querySelector(".pause-hint");
+    if (hint) {
+      hint.innerHTML = t("pause.host_verifying") + '<span class="pause-dots"></span>';
+    }
+  }
+
+  $("pauseOverlay").classList.add("active");
+}
+
+function renderReadyButton() {
+  const content = document.querySelector(".pause-content");
+  if (!content) return;
+
+  if (!readyState.awaiting) {
+    const el = document.getElementById("readyBox");
+    if (el) el.remove();
+    return;
+  }
+
+  const iWon = !!(lastWinData && lastWinData.code);
+  let box = document.getElementById("readyBox");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "readyBox";
+    box.style.cssText = "margin: 20px auto; max-width: 340px; text-align: center;";
+    const hint = content.querySelector(".pause-hint");
+    if (hint) content.insertBefore(box, hint);
+    else content.appendChild(box);
+  }
+
+  if (readyState.iAmReady) {
+    box.innerHTML = `
+      <div style="padding:16px 20px; background:#1a2d4a; border:2px solid #1976d2; border-radius:12px; color:#64b5f6; font-weight:800; font-size:1rem;">
+        ✅ ${iWon ? "COBRADO" : "LISTO"} — Esperando…
+      </div>
+      <div style="margin-top:10px; font-size:0.85rem; color:#90a4c4;">
+        Listos: ${readyState.ready} de ${readyState.total}
+      </div>
+    `;
+  } else {
+    const btnText = iWon ? "✅ OK, HE COBRADO" : "✅ ESTOY LISTO";
+    const aviso = iWon
+      ? `<div style="margin-top:10px; font-size:0.9rem; color:#f5c542; font-weight:700;">👇 Pulsa solo cuando hayas cobrado tu premio</div>`
+      : "";
+    box.innerHTML = `
+      <button id="btnReady" style="padding:16px 24px; font-size:1.1rem; font-weight:800; border-radius:12px; border:none; background:linear-gradient(180deg,#43a047,#2e7d32); color:#fff; width:100%; cursor:pointer; letter-spacing:0.5px; box-shadow:0 4px 12px rgba(67,160,71,0.4);">
+        ${btnText}
+      </button>
+      ${aviso}
+      <div style="margin-top:10px; font-size:0.85rem; color:#90a4c4;">
+        Listos: ${readyState.ready} de ${readyState.total}
+      </div>
+    `;
+    document.getElementById("btnReady").onclick = markPaid;
+  }
+}
+
+let __payoutPaidSent = false;
+
+function markPaid() {
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ type: "player_mark_paid" }));
+  }
+  if (__payoutPaidSent) return;
+  __payoutPaidSent = true;
+  window.__payoutApplausePlayed = false;
+
+  const btn = document.getElementById("btnReady");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳ ESPERANDO A LOS DEMÁS…";
+    btn.style.background = "linear-gradient(180deg, #1976d2, #0d47a1)";
+  }
+  const hint = document.querySelector("#pauseWinnerBox");
+  if (hint && !document.getElementById("paidHint")) {
+    const h = document.createElement("div");
+    h.id = "paidHint";
+    h.style.cssText = "margin-top:10px; font-size:0.85rem; color:#64b5f6; font-weight:700; text-align:center;";
+    h.textContent = "✅ Has confirmado el cobro. Esperando…";
+    hint.appendChild(h);
+  }
+}
+
+function hidePauseOverlay() {
+  $("pauseOverlay").classList.remove("active");
+}
+
+function showClaimWindow(claimType, seconds, lastBall = null, eligibleIds = null, claimerName = "Alguien") {
+  claimWindowType = claimType;
+  claimWindowEndsAt = Date.now() + seconds * 1000;
+  lastClaimLastBall = lastBall;
+  lastClaimEligibleIds = eligibleIds || [];
+
+  const alreadyClaimed = myClaimedThisRound[claimType];
+  const lastNum = lastBall?.number || null;
+  const hasLastBall = lastNum ? cardContainsNumber(lastNum) : true;
+
+  if (alreadyClaimed) {
+    $("cwIcon").textContent = claimType === "bingo" ? "🥈" : "🥉";
+    $("cwTitle").textContent = t("cw.claimed_title", { claim: claimType.toUpperCase() });
+    $("cwCounter").textContent = seconds + "s";
+    renderClaimWindowActions(claimType, lastBall, eligibleIds);
+    $("claimWindowOverlay").classList.add("active");
+
+    if (claimWindowInterval) clearInterval(claimWindowInterval);
+    claimWindowInterval = setInterval(() => {
+      const left = Math.max(0, Math.ceil((claimWindowEndsAt - Date.now()) / 1000));
+      $("cwCounter").textContent = left + "s";
+      if (left <= 0) {
+        clearInterval(claimWindowInterval);
+        claimWindowInterval = null;
+      }
+    }, 200);
+    return;
+  }
+
+  if (hasLastBall) {
+    $("claimWindowOverlay").classList.remove("active");
+    const banner = $("claimReadyBanner");
+    if (banner) {
+      banner.textContent = t("claim.other_called", {
+        name: claimerName,
+        claim: claimType.toUpperCase(),
+        ball: lastNum
+      });
+      banner.className = "claim-ready-banner active " + claimType;
+    }
+    return;
+  }
+
+  $("claimWindowOverlay").classList.remove("active");
+  showPauseOverlay(
+    t("claim.other_called", { name: claimerName, claim: claimType.toUpperCase(), ball: lastNum }),
+    null,
+    "⏳"
+  );
+  $("pauseTitle").textContent = t("pause.verify", { claim: claimType.toUpperCase() });
+  const hint = document.querySelector(".pause-hint");
+  if (hint) hint.innerHTML = t("pause.verify_wait") + '<span class="pause-dots"></span>';
+}
+
+function renderClaimWindowActions(claimType, lastBall = null, eligibleIds = null) {
+  const actionsEl = $("cwActions");
+  const alreadyClaimed = myClaimedThisRound[claimType];
+  const lb = lastBall || lastClaimLastBall;
+  const lastNum = lb?.number || null;
+
+  const hasLastBall = lastNum ? cardContainsNumber(lastNum) : true;
+  const hasRealLine = claimType === "line" ? detectLine() : true;
+  const hasRealBingo = claimType === "bingo" ? detectBingo() : true;
+  const reallyHasIt = hasLastBall && hasRealLine && hasRealBingo;
+
+  if (alreadyClaimed) {
+    actionsEl.innerHTML = `<div class="claim-window-status already">${t("cw.you_already", { claim: claimType.toUpperCase() })}<br/><span style="font-size:0.85rem; opacity:0.8;">${t("cw.waiting_other")}</span></div>`;
+    return;
+  }
+
+  if (!reallyHasIt) {
+    actionsEl.innerHTML = `<div class="claim-window-status waiting">${t("cw.waiting_close")}<br/><span style="font-size:0.85rem; opacity:0.8;">${t("cw.no_valid", { claim: claimType.toUpperCase() })}</span></div>`;
+    return;
+  }
+
+  actionsEl.innerHTML = `<div class="claim-window-message">${t("cw.claim_msg", { claim: claimType.toUpperCase(), ball: lastNum || "" })}</div><button class="claim-window-btn" id="cwJoinBtn">${t("cw.join_btn", { claim: claimType.toUpperCase() })}</button>`;
+  $("cwJoinBtn").onclick = () => {
+    myClaimedThisRound[claimType] = true;
+    myClaimPending[claimType] = true;
+    updateClaimButtons();
+    renderClaimWindowActions(claimType, lastBall, eligibleIds);
+    if (claimType === "line") ws.send(JSON.stringify({ type: "player_claim_line" }));
+    else ws.send(JSON.stringify({ type: "player_claim_bingo" }));
+  };
+}
+
+function hideClaimWindow() {
+  if (claimWindowInterval) { clearInterval(claimWindowInterval); claimWindowInterval = null; }
+  $("claimWindowOverlay").classList.remove("active");
+}
+
+function showConfirm({ icon = "❓", title, message, onYes }) {
+  const overlay = $("confirmOverlay");
+  $("confirmIcon").textContent = icon;
+  $("confirmTitle").textContent = title;
+  $("confirmMessage").textContent = message;
+
+  if (!modalOpenSent && ws && ws.readyState === 1) {
+    modalOpenSent = true;
+    ws.send(JSON.stringify({ type: "player_modal_open" }));
+  }
+
+  const yesBtn = $("confirmYes");
+  const noBtn = $("confirmNo");
+  const newYes = yesBtn.cloneNode(true);
+  const newNo = noBtn.cloneNode(true);
+  yesBtn.parentNode.replaceChild(newYes, yesBtn);
+  noBtn.parentNode.replaceChild(newNo, noBtn);
+
+  const closeModal = () => {
+    overlay.classList.remove("active");
+    if (modalOpenSent && ws && ws.readyState === 1) {
+      ws.send(JSON.stringify({ type: "player_modal_close" }));
+    }
+    modalOpenSent = false;
+  };
+
+  newYes.onclick = () => {
+    closeModal();
+    if (typeof onYes === "function") onYes();
+  };
+  newNo.onclick = () => {
+    closeModal();
+  };
+  overlay.classList.add("active");
+}
+
+function toast(text, type = "info", duration = 4000) {
+  const c = $("toasts");
+  const el = document.createElement("div");
+  el.className = "toast " + type;
+  el.textContent = text;
+  c.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = "opacity 0.3s, transform 0.3s";
+    el.style.opacity = "0";
+    el.style.transform = "translateY(-20px)";
+    setTimeout(() => el.remove(), 350);
+  }, duration);
+}
+
+try {
+  const savedName = localStorage.getItem("ab_lastName");
+  if (savedName) $("inputName").value = savedName;
+} catch (e) {}
+
+$("inputName").addEventListener("blur", e => {
+  const v = e.target.value.trim();
+  if (v) { try { localStorage.setItem("ab_lastName", v); } catch (e) {} }
+});
+
+$("btnChangeName").onclick = () => {
+  showConfirm({
+    icon: "✏️",
+    title: t("confirm.change_name_title"),
+    message: t("confirm.change_name_msg"),
+    onYes: () => {
+      if (ws && ws.readyState === 1 && myName) {
+        const nuevoNombre = prompt("Introduce tu nuevo nombre:", myName);
+        if (nuevoNombre && nuevoNombre.trim() !== "") {
+          ws.send(JSON.stringify({ type: "player_change_name", newName: nuevoNombre.trim().toUpperCase() }));
+        }
+      } else {
+        try { localStorage.removeItem("ab_lastName"); } catch (e) {}
+        $("inputName").value = "";
+        $("inputName").focus();
+        toast(t("login.your_name"), "info");
+      }
+    }
+  });
+};
+
+async function requestWakeLock() {
+  if (!wakeLockSupported) return false;
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+    $("wakeLockIndicator").classList.add("active");
+    wakeLock.addEventListener("release", () => {
+      $("wakeLockIndicator").classList.remove("active");
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function releaseWakeLock() {
+  if (wakeLock) {
+    try { await wakeLock.release(); } catch (e) {}
+    wakeLock = null;
+  }
+  $("wakeLockIndicator").classList.remove("active");
+}
+
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "visible") {
+    if (wakeLock === null) {
+      const activeScreen = document.querySelector(".screen.active");
+      if (activeScreen && (activeScreen.id === "screen-game" || activeScreen.id === "screen-approved")) {
+        await requestWakeLock();
+      }
+    }
+    if (joinedSuccessfully) {
+      const wsDown = !ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING;
+      const wsStuck = ws && ws.readyState === WebSocket.OPEN && !wsLastMessageAt;
+      const wsStale = wsLastMessageAt && (Date.now() - wsLastMessageAt > 30000);
+      if (wsDown || wsStuck || wsStale) {
+        if (ws) { try { ws.close(); } catch (e) {} }
+        if (!reconnecting) {
+          reconnecting = true;
+          showReconnectBanner();
+        }
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(() => {
+          reconnectAttempts++;
+          connectWS();
+        }, 500);
+      }
+    }
+  }
+});
+
+function leaveGame() {
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ type: "player_leave" }));
+  }
+  sessionStorage.removeItem("ab_reloaded_on_login");
+  setTimeout(() => {
+    try { localStorage.removeItem("ab_lastName"); } catch (e) {}
+    if (ws) { try { ws.close(); } catch (e) {} }
+    location.reload();
+  }, 300);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btnBackToLogin = $("btnBackToLogin");
+  if (btnBackToLogin) {
+    btnBackToLogin.onclick = () => {
+      joinedSuccessfully = false;
+      if (ws) { try { ws.close(); } catch (e) {} }
+      sessionStorage.removeItem("ab_reloaded_on_login");
+      location.reload();
+    };
+  }
+
+  const btnPlayAgainFromCard = $("btnPlayAgainFromCard");
+  if (btnPlayAgainFromCard) {
+    btnPlayAgainFromCard.onclick = () => {
+      cardLocked = false;
+      applyCardLock();
+      resetForNewRound();
+    };
+  }
+
+  const btnLeaveFromCard = $("btnLeaveFromCard");
+  if (btnLeaveFromCard) {
+    btnLeaveFromCard.onclick = () => {
+      showConfirm({
+        icon: "🚪",
+        title: t("end.leave_confirm_title"),
+        message: t("end.leave_confirm_msg"),
+        onYes: leaveGame
+      });
+    };
+  }
+
+  const btnCancelWaiting = $("btnCancelWaiting");
+  if (btnCancelWaiting) {
+    btnCancelWaiting.onclick = () => {
+      showConfirm({
+        icon: "✏️",
+        title: t("confirm.cancel_wait_title"),
+        message: t("confirm.cancel_wait_msg"),
+        onYes: leaveGame
+      });
+    };
+  }
+
+  const btnFloat = $("btnLeaveFloating");
+  if (btnFloat) {
+    btnFloat.onclick = () => {
+      showConfirm({
+        icon: "🚪",
+        title: t("game.leave_confirm_title"),
+        message: t("game.leave_confirm_msg"),
+        onYes: leaveGame
+      });
+    };
+  }
+
+  const wrReadyBtn = $("wrReadyBtn");
+  if (wrReadyBtn) {
+    wrReadyBtn.onclick = () => sendReady();
+  }
+
+  const wrLeaveBtn = $("wrLeaveBtn");
+  if (wrLeaveBtn) {
+    wrLeaveBtn.onclick = () => {
+      showConfirm({
+        icon: "🚪",
+        title: t("confirm.leave_room_title"),
+        message: t("confirm.leave_room_msg"),
+        onYes: leaveGame
+      });
+    };
+  }
+
+  const btnLeaveFromReadyWait = $("btnLeaveFromReadyWait");
+  if (btnLeaveFromReadyWait) {
+    btnLeaveFromReadyWait.onclick = () => {
+      showConfirm({
+        icon: "🚪",
+        title: t("game.leave_confirm_title"),
+        message: t("game.leave_confirm_msg"),
+        onYes: leaveGame
+      });
+    };
+  }
+
+  const iconLineInit = $("iconLine");
+  if (iconLineInit) iconLineInit.innerHTML = iconLineHtml();
+  const iconBingoInit = $("iconBingo");
+  if (iconBingoInit) iconBingoInit.innerHTML = iconBingoHtml();
+});
+
+
+// === RECONEXIÓN AUTOMÁTICA (NUEVO) ===
+(function() {
+  if (typeof ws === "undefined") return;
+  let _backoff = 1000;
+  const _wsUrl = ws.url;
+  const _origOnClose = ws.onclose;
+  ws.onclose = function(e) {
+    if (_origOnClose) _origOnClose.call(this, e);
+    setTimeout(function() {
+      try {
+        ws = new WebSocket(_wsUrl);
+        ws.onopen = function() {
+          _backoff = 1000;
+          if (typeof send === "function" && typeof MY_NAME !== "undefined" && typeof ROOM_CODE !== "undefined") {
+            send({ type: "player_join", code: ROOM_CODE, name: MY_NAME });
+          }
+        };
+        ws.onmessage = window._origOnMessage || ws.onmessage;
+        ws.onclose = arguments.callee;
+      } catch (err) {}
+    }, _backoff);
+    _backoff = Math.min(_backoff * 2, 30000);
+  };
+  window._origOnMessage = ws.onmessage;
+})();
+
+
+
+</script>
+
+<div id="langSelector" style="
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 9998;
+  display: flex;
+  gap: 4px;
+  background: rgba(10, 20, 36, 0.85);
+  padding: 4px;
+  border-radius: 20px;
+  border: 1px solid #2a4a72;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+">
+  <button data-lang-btn="es" class="lang-btn">🇪🇸 ES</button>
+  <button data-lang-btn="en" class="lang-btn">🇬🇧 EN</button>
+</div>
+<style>
+  .lang-btn {
+    background: transparent;
+    border: none;
+    color: #90a4c4;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 16px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+  .lang-btn:hover { color: #f5c542; }
+  .lang-btn.active {
+    background: linear-gradient(180deg, #f5c542, #e8a020);
+    color: #1a1a1a;
+  }
+</style>
+</body>
+</html>
